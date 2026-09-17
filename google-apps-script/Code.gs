@@ -26,7 +26,7 @@ function doGet() {
 function doPost(e) {
   try {
     const body = JSON.parse(e.postData.contents);
-    const validWeekends = ["sep", "oct", "nov", "dec"];
+    const validWeekends = ["oct-2026", "nov-2026", "dec-2026", "jan-2027", "feb-2027", "mar-2027"];
     const validDays = ["Samstag", "Sonntag"];
     const name = String(body.name || "").trim();
     if (!validWeekends.includes(body.weekendId) || !validDays.includes(body.day) || !name || name.length > 80) {

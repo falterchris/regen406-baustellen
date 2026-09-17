@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const allowedWeekends = new Set(["sep", "oct", "nov", "dec"]);
+const allowedWeekends = new Set(["oct-2026", "nov-2026", "dec-2026", "jan-2027", "feb-2027", "mar-2027"]);
 const allowedDays = new Set(["Samstag", "Sonntag"]);
 
 function endpoint() {
