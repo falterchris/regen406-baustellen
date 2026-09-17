@@ -269,18 +269,13 @@ export default function Home() {
             Jede helfende Hand zählt.
           </p>
           <div className="hero-actions">
-            <a href="#baustellenwoche">Baustellen-Woche <span>↓</span></a>
-            <a href="#termine">Baustellen-Wochenenden <span>↓</span></a>
+            <a href="#baustellenwoche">
+              Baustellen-Woche <span>↓</span>
+            </a>
+            <a href="#termine">
+              Baustellen-Wochenenden <span>↓</span>
+            </a>
           </div>
-        </div>
-        <div className="hero-image">
-          <Image
-            src="/baustellen-woche.jpg"
-            fill
-            sizes="(max-width: 760px) 100vw, 48vw"
-            alt="Menschen bei einer REGEN406 Baustellen-Aktion"
-            priority
-          />
         </div>
       </section>
       <section className="construction-week" id="baustellenwoche">
@@ -311,6 +306,7 @@ export default function Home() {
           </a>
         </div>
         <div className="construction-week-art">
+          <span className="art-line" />
           <span>
             Schicht wählen.
             <br />

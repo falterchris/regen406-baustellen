@@ -54,16 +54,13 @@ footer img {
   padding: 5px 0;
 }
 .hero {
-  display: grid;
-  grid-template-columns: 1.02fr 0.98fr;
   background: var(--green);
-  min-height: 545px;
-  padding-left: 5vw;
-  overflow: hidden;
+  min-height: 500px;
+  padding: 0 5vw;
 }
 .hero-copy {
   align-self: center;
-  padding: 55px 6vw 75px 0;
+  padding: 82px 0 88px;
   max-width: 710px;
 }
 .eyebrow {
@@ -98,14 +95,30 @@ footer img {
   font-weight: 700;
   text-decoration: none;
 }
-.hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.hero-actions a{display:inline-flex;gap:14px;align-items:center;padding:11px 14px;font-size:.9rem;font-weight:700;text-decoration:none;border:2px solid var(--pink);background:var(--yellow)}.hero-actions a:nth-child(2){background:var(--blue);border-color:var(--blue);color:var(--paper)}.hero-actions span{font-size:1.2rem}
-.hero-image {
-  position: relative;
-  min-height: 545px;
-  background: var(--green);
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
 }
-.hero-image img {
-  object-fit: contain;
+.hero-actions a {
+  display: inline-flex;
+  gap: 14px;
+  align-items: center;
+  padding: 11px 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: 0;
+  background: var(--yellow);
+}
+.hero-actions a:nth-child(2) {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--paper);
+}
+.hero-actions span {
+  font-size: 1.2rem;
 }
 .section-heading h2,
 .construction-week h2,
@@ -116,7 +129,7 @@ footer img {
   margin: 0;
 }
 .construction-week {
-  background: var(--paper);
+  background: var(--yellow);
   display: grid;
   grid-template-columns: 1fr 0.62fr;
 }
@@ -140,12 +153,21 @@ footer img {
   background: var(--yellow);
   color: var(--pink);
   display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   align-items: flex-end;
+  gap: 24px;
   padding: 45px 4vw;
   font-size: clamp(2.8rem, 6vw, 6.5rem);
   font-weight: 700;
   letter-spacing: -0.09em;
   line-height: 0.82;
+}
+.construction-week-art .art-line {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--pink);
 }
 .construction-week a {
   background: var(--ink);
@@ -405,7 +427,7 @@ footer {
   font-size: 0.88rem;
 }
 footer img {
-  width: 40px;
+  width: 64px;
   height: auto;
 }
 footer p {
@@ -427,15 +449,10 @@ footer a {
     font-size: 0.75rem;
   }
   .hero {
-    grid-template-columns: 1fr;
-    padding-left: 20px;
+    padding: 0 20px;
   }
   .hero-copy {
-    padding: 63px 20px 54px 0;
-  }
-  .hero-image {
-    min-height: 385px;
-    margin-left: -20px;
+    padding: 65px 0 68px;
   }
   .section-heading {
     grid-template-columns: 1fr;
