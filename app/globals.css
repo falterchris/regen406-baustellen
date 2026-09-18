@@ -8,6 +8,8 @@
   --ink: #151515;
   --paper: #f8f7f1;
   --line: #d7d5cd;
+  --content: 1100px;
+  --gutter: max(5vw, calc((100vw - var(--content)) / 2));
 }
 * {
   box-sizing: border-box;
@@ -32,7 +34,7 @@ input {
 }
 .site-header {
   min-height: 132px;
-  padding: 22px 5vw;
+  padding: 22px var(--gutter);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -56,7 +58,7 @@ footer img {
 .hero {
   background: var(--green);
   min-height: 500px;
-  padding: 0 5vw;
+  padding: 0 var(--gutter);
 }
 .hero-copy {
   align-self: center;
@@ -134,11 +136,13 @@ footer img {
   grid-template-columns: 1fr 0.62fr;
 }
 .construction-week-copy {
-  padding: 78px max(5vw, calc((100vw - 1100px) / 2));
+  padding: 78px var(--gutter);
   padding-right: 6vw;
 }
 .construction-week-copy .eyebrow {
-  color: var(--pink);
+  color: var(--ink);
+  font-size: 0.93rem;
+  letter-spacing: 0.055em;
 }
 .construction-week-copy p:not(.eyebrow):not(.cafe-note) {
   max-width: 625px;
@@ -157,7 +161,7 @@ footer img {
   justify-content: flex-end;
   align-items: flex-end;
   gap: 24px;
-  padding: 45px 4vw;
+  padding: 45px var(--gutter) 45px 4vw;
   font-size: clamp(2.8rem, 6vw, 6.5rem);
   font-weight: 700;
   letter-spacing: -0.09em;
@@ -180,7 +184,7 @@ footer img {
 .section-heading,
 .cards,
 .weekends > h3 {
-  max-width: 1100px;
+  max-width: var(--content);
   margin-left: auto;
   margin-right: auto;
 }
@@ -189,10 +193,6 @@ footer img {
   grid-template-columns: 0.8fr 1.2fr;
   column-gap: 58px;
   margin-bottom: 37px;
-}
-.section-heading .eyebrow {
-  grid-column: 1 / -1;
-  color: var(--blue);
 }
 .section-heading h2 {
   margin: 0;
@@ -423,7 +423,7 @@ footer {
   gap: 25px;
   align-items: flex-start;
   background: var(--green);
-  padding: 42px 5vw;
+  padding: 42px var(--gutter);
   font-size: 0.88rem;
 }
 footer img {

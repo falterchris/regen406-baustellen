@@ -264,9 +264,9 @@ export default function Home() {
             <em>anpacken.</em>
           </h1>
           <p>
-            Ab 10 Uhr geht&apos;s los. Du brauchst keine Vorerfahrung – nur Lust
-            aufs Mitmachen. Ob große Baustellen-Woche oder einzelnes Wochenende:
-            Jede helfende Hand zählt.
+            Ob große Baustellen-Woche oder einzelnes Wochenende: Jede helfende
+            Hand zählt. Du brauchst keine Vorerfahrung – nur Lust aufs
+            Mitmachen.
           </p>
           <div className="hero-actions">
             <a href="#baustellenwoche">
@@ -280,7 +280,7 @@ export default function Home() {
       </section>
       <section className="construction-week" id="baustellenwoche">
         <div className="construction-week-copy">
-          <p className="eyebrow">A · 09.–18. OKTOBER 2026</p>
+          <p className="eyebrow">09.–18. OKTOBER 2026</p>
           <h2>
             REGEN406
             <br />
@@ -316,7 +316,6 @@ export default function Home() {
       </section>
       <section className="weekends" id="termine">
         <div className="section-heading">
-          <p className="eyebrow">B · BAUSTELLEN-WOCHENENDEN</p>
           <h2>
             REGEN406
             <br />
