@@ -191,7 +191,7 @@ footer img {
 }
 .shift-plan {
   grid-column: 1 / -1;
-  background: var(--paper);
+  background: var(--yellow);
   color: var(--ink);
   padding: 68px var(--gutter) 86px;
 }
@@ -207,7 +207,7 @@ footer img {
   font-size: clamp(2.1rem, 4vw, 3.8rem);
   letter-spacing: -0.075em;
   line-height: 0.9;
-  color: var(--pink);
+  color: var(--ink);
 }
 .shift-plan-heading p {
   max-width: 540px;
@@ -218,11 +218,17 @@ footer img {
   display: grid;
   grid-template-columns: 170px 1fr;
   max-width: var(--content);
-  margin: 0 auto;
-  border-top: 2px solid var(--ink);
+  margin: 0 auto 18px;
+  background: var(--paper);
+  border: 1px solid var(--pink);
 }
 .construction-day > header {
-  padding: 23px 22px 23px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 22px 18px;
+  background: var(--pink);
+  color: var(--yellow);
 }
 .construction-day > header p {
   margin: 0 0 4px;
@@ -233,16 +239,16 @@ footer img {
 }
 .construction-day h4 {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   letter-spacing: -0.04em;
 }
 .construction-shifts {
-  padding: 18px 0 22px;
+  padding: 20px 22px 22px;
 }
 .construction-shift + .construction-shift {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--pink);
 }
 .construction-shift h5 {
   margin: 0 0 10px;
@@ -258,11 +264,11 @@ footer img {
   min-height: 135px;
   flex-direction: column;
   padding: 14px;
-  background: #e5f2ec;
-  border: 1px solid var(--green);
+  background: #fffdf4;
+  border: 1px solid var(--line);
 }
-.role-card:nth-child(2) { background: #f1e6ee; border-color: #dda1c6; }
-.role-card:nth-child(3) { background: #e4ecf8; border-color: #a8c0e1; }
+.role-card:nth-child(2) { background: #fff8de; border-color: #e7bd77; }
+.role-card:nth-child(3) { background: #f6e8f1; border-color: #d99abe; }
 .role-name {
   margin: 0 0 9px;
   font-weight: 700;
@@ -305,7 +311,7 @@ footer img {
   align-self: flex-start;
   padding: 7px 10px;
   border: 0;
-  background: var(--ink);
+  background: var(--pink);
   color: var(--paper);
   font-size: 0.78rem;
   font-weight: 700;
@@ -647,8 +653,8 @@ footer a {
   .shift-plan { padding: 52px 20px 62px; }
   .shift-plan-heading { grid-template-columns: 1fr; gap: 16px; margin-bottom: 28px; }
   .construction-day { grid-template-columns: 1fr; }
-  .construction-day > header { padding: 21px 0 7px; }
-  .construction-shifts { padding-top: 12px; }
+  .construction-day > header { min-height: 112px; padding: 19px; }
+  .construction-shifts { padding: 17px; }
   .role-grid { grid-template-columns: 1fr; }
   .role-card { min-height: 0; }
   .weekends {
