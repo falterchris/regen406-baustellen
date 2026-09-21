@@ -360,7 +360,7 @@ footer img {
 }
 .weekend-card {
   display: grid;
-  grid-template-columns: 150px 1fr;
+  grid-template-columns: 170px 1fr;
   min-height: 325px;
   background: var(--paper);
   border: 1px solid var(--green);
@@ -403,23 +403,29 @@ footer img {
   font-size: 0.78rem;
 }
 .people {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   flex: 1;
   margin: 19px 0;
 }
 .people > p {
+  grid-column: 1 / -1;
   font-size: 0.88rem;
   font-weight: 700;
   margin: 0 0 7px;
 }
 .people > .help-counter { color: var(--pink); }
 .people-day {
-  display: grid;
-  grid-template-columns: 67px 1fr;
-  padding: 6px 0;
-  border-top: 1px solid var(--line);
-  min-height: 32px;
+  display: block;
+  min-height: 85px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  background: #fffdf4;
 }
 .people-day > span {
+  display: block;
+  margin-bottom: 8px;
   font-size: 0.72rem;
   font-weight: 700;
 }
@@ -674,6 +680,8 @@ footer a {
   .card-content {
     padding: 18px;
   }
+  .people { grid-template-columns: 1fr; }
+  .people > p { grid-column: auto; }
   .year-heading {
     margin-top: 42px !important;
   }
