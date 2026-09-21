@@ -152,6 +152,9 @@ footer img {
   display: block;
 }
 .construction-week-copy {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 58px;
   max-width: var(--content);
   width: min(var(--content), 90vw);
   margin: 0 auto;
@@ -165,10 +168,12 @@ footer img {
 .construction-week h2 {
   color: var(--pink);
 }
-.construction-week-copy p:not(.eyebrow):not(.cafe-note) {
+.construction-week-intro > p:not(.cafe-note) {
   max-width: 625px;
   font-size: 1.08rem;
+  margin: 0 0 18px;
 }
+.construction-week-intro .cafe-note { margin-top: 24px; }
 .cafe-note {
   font-size: 0.85rem;
   font-weight: 700;
@@ -257,6 +262,12 @@ footer img {
   margin: 0 0 9px;
   font-weight: 700;
   font-size: 0.85rem;
+}
+.help-counter {
+  margin: 0 0 8px;
+  color: var(--pink);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 .signup-names {
   display: flex;
@@ -400,6 +411,7 @@ footer img {
   font-weight: 700;
   margin: 0 0 7px;
 }
+.people > .help-counter { color: var(--pink); }
 .people-day {
   display: grid;
   grid-template-columns: 67px 1fr;
@@ -629,6 +641,8 @@ footer a {
     display: block;
   }
   .construction-week-copy {
+    grid-template-columns: 1fr;
+    gap: 20px;
     padding: 62px 20px 38px;
   }
   .shift-plan { padding: 52px 20px 62px; }
