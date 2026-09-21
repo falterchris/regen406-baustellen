@@ -19,6 +19,8 @@ type Signup = {
   created_at: string;
 };
 
+const SIGNAL_URL = "https://www.regen406.de";
+
 const weekends: Weekend[] = [
   {
     id: "oct-2026",
@@ -125,6 +127,7 @@ function People({
 export default function Home() {
   const [signups, setSignups] = useState<Signup[]>([]);
   const [name, setName] = useState("");
+  const [comment, setComment] = useState("");
   const [day, setDay] = useState("Samstag");
   const [activeWeekend, setActiveWeekend] = useState<string | null>(null);
   const [myIds, setMyIds] = useState<string[]>([]);
@@ -134,6 +137,9 @@ export default function Home() {
   const [cancellationStatus, setCancellationStatus] = useState<
     "idle" | "saving" | "error"
   >("idle");
+  const [completedWeekend, setCompletedWeekend] = useState<Weekend | null>(
+    null,
+  );
 
   useEffect(() => {
     fetch("/api/signups")
@@ -156,7 +162,7 @@ export default function Home() {
       const response = await fetch("/api/signups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ weekendId: activeWeekend, day, name }),
+        body: JSON.stringify({ weekendId: activeWeekend, day, name, comment }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
@@ -168,6 +174,10 @@ export default function Home() {
         JSON.stringify(updated),
       );
       setName("");
+      setComment("");
+      setCompletedWeekend(
+        weekends.find((weekend) => weekend.id === activeWeekend) ?? null,
+      );
       setActiveWeekend(null);
       setStatus("idle");
     } catch {
@@ -266,8 +276,17 @@ export default function Home() {
           <p>
             Ob große Baustellen-Woche oder einzelnes Wochenende: Jede helfende
             Hand zählt. Du brauchst keine Vorerfahrung – nur Lust aufs
-            Mitmachen.
+            Mitmachen. Auch wenn du nur kurz Zeit hast: Trag dich bitte ein –
+            das hilft uns bei Essen, Werkzeug und Ausrüstung.
           </p>
+          <a
+            className="signal-intro"
+            href={SIGNAL_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Aktuelle Infos zu den Bau-Terminen via Signal <span>↗</span>
+          </a>
           <div className="hero-actions">
             <a href="#baustellenwoche">
               Baustellen-Woche <span>↓</span>
@@ -288,8 +307,8 @@ export default function Home() {
           </h2>
           <p>
             Wir wollen gemeinsam die Sandarbeiten im Dachboden stemmen. Wenn
-            jeden Tag genug von euch mitmachen, können wir die Arbeiten selbst
-            schaffen und unserem Projekt rund 20.000 € sparen.
+            jeden Tag genug mitmachen, können wir die Arbeiten selbst schaffen
+            und unserem Projekt rund 20.000 € sparen.
           </p>
           <p>
             Für Essen, Getränke und einen gemeinsamen Ausklang am Lagerfeuer ist
@@ -372,6 +391,16 @@ export default function Home() {
                   autoComplete="name"
                 />
               </label>
+              <label>
+                Kommentar <span className="optional">(optional)</span>
+                <textarea
+                  value={comment}
+                  onChange={(event) => setComment(event.target.value)}
+                  maxLength={500}
+                  rows={3}
+                  placeholder="Zum Beispiel: Ich komme etwas später."
+                />
+              </label>
               <fieldset>
                 <legend>Wann kannst du helfen?</legend>
                 <div className="day-buttons">
@@ -403,6 +432,48 @@ export default function Home() {
                   : "Verbindlich eintragen"}
               </button>
             </form>
+          </section>
+        </div>
+      )}
+      {completedWeekend && (
+        <div
+          className="modal-backdrop"
+          role="presentation"
+          onMouseDown={() => setCompletedWeekend(null)}
+        >
+          <section
+            className="signup-modal success-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="success-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <button
+              className="close"
+              type="button"
+              aria-label="Schließen"
+              onClick={() => setCompletedWeekend(null)}
+            >
+              ×
+            </button>
+            <p className="eyebrow">ANMELDUNG GESPEICHERT</p>
+            <h2 id="success-title">Super, du bist dabei!</h2>
+            <p>
+              Du bist für das Baustellen-Wochenende am {completedWeekend.dates}{" "}
+              eingetragen.
+            </p>
+            <a
+              className="signal-cta"
+              href={SIGNAL_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Signal-Gruppe beitreten <span>↗</span>
+            </a>
+            <p className="signal-note">
+              Dort teilen wir aktuelle Infos zu Bau-Wochenenden und der
+              Baustellen-Woche.
+            </p>
           </section>
         </div>
       )}

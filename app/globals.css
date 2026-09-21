@@ -29,7 +29,8 @@ a {
   color: inherit;
 }
 button,
-input {
+input,
+textarea {
   font: inherit;
 }
 .site-header {
@@ -122,6 +123,17 @@ footer img {
 }
 .hero-actions span {
   font-size: 1.2rem;
+}
+.signal-intro {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.signal-intro span {
+  font-size: 1.1rem;
 }
 .section-heading h2,
 .construction-week h2,
@@ -352,7 +364,7 @@ footer img {
   max-width: 570px;
   background: var(--paper);
   padding: 40px;
-  box-shadow: 13px 13px 0 var(--yellow);
+  box-shadow: 13px 13px 0 var(--green);
 }
 .signup-modal .eyebrow {
   color: var(--blue);
@@ -367,7 +379,10 @@ footer img {
   cursor: pointer;
 }
 .signup-modal > p:not(.eyebrow) {
-  margin-top: -10px;
+  margin-top: 0;
+}
+.signup-modal h2 {
+  margin-bottom: 16px;
 }
 .signup-modal form {
   margin-top: 26px;
@@ -377,13 +392,26 @@ footer img {
   font-size: 0.85rem;
   font-weight: 700;
 }
-.signup-modal input {
+.signup-modal input,
+.signup-modal textarea {
   display: block;
   width: 100%;
   margin-top: 6px;
   padding: 11px;
   border: 1px solid var(--ink);
   background: transparent;
+  font-size: 16px;
+}
+.signup-modal textarea {
+  resize: vertical;
+  min-height: 84px;
+}
+.signup-modal label + label {
+  display: block;
+  margin-top: 18px;
+}
+.optional {
+  font-weight: 400;
 }
 .signup-modal fieldset {
   border: 0;
@@ -424,6 +452,24 @@ footer img {
 }
 .cancellation-modal {
   max-width: 510px;
+}
+.success-modal {
+  max-width: 540px;
+}
+.signal-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: var(--blue);
+  color: var(--paper);
+  font-weight: 700;
+  text-decoration: none;
+}
+.signal-note {
+  font-size: 0.9rem;
+  margin-top: 18px !important;
 }
 footer {
   display: flex;
