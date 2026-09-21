@@ -14,6 +14,10 @@ Das Google Sheet selbst muss nicht öffentlich freigegeben werden. Es bleibt eur
 
 Wenn die optionale Kommentarfunktion eingesetzt werden soll, den aktualisierten Inhalt aus `google-apps-script/Code.gs` speichern und die bestehende Web-App erneut bereitstellen. Das Tabellenblatt erhält automatisch die zusätzliche Spalte **Kommentar**.
 
+## Baustellen-Woche 2026
+
+Nach dem Aktualisieren des Apps-Script-Codes einmal im Funktionsmenü `importConstructionWeek2026_` auswählen und auf **Ausführen** klicken. Dadurch werden die bisherigen Namen und Kommentare aus dem alten Schichtplan einmalig in das Blatt `Anmeldungen` übernommen. Die Funktion erkennt eine bereits erfolgte Übernahme und legt keine Duplikate an.
+
 ## Abmelde-Anfragen
 
 Die Website löscht keine Anmeldung direkt. Wer sich auf dem eigenen Gerät eingetragen hat, kann eine Abmeldung anfragen. Diese erscheint im Google Sheet im neuen Tabellenblatt **Abmeldungen**. Dort die Anfrage als erledigt markieren und die entsprechende Zeile im Tabellenblatt **Anmeldungen** löschen.

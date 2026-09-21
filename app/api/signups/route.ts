@@ -9,6 +9,13 @@ const allowedWeekends = new Set([
   "mar-2027",
 ]);
 const allowedDays = new Set(["Samstag", "Sonntag"]);
+const allowedConstructionSlots = new Set([
+  "fri-09-evening", "sat-10-morning", "sat-10-evening", "sun-11-morning",
+  "sun-11-evening", "wed-14-morning", "wed-14-evening", "thu-15-morning",
+  "thu-15-evening", "fri-16-morning", "fri-16-evening", "sat-17-morning",
+  "sat-17-evening", "sun-18-morning", "sun-18-evening",
+]);
+const allowedRoles = new Set(["Verpflegung", "Lead", "Helfer:in"]);
 
 function endpoint() {
   const url = process.env.GOOGLE_APPS_SCRIPT_URL;
@@ -35,9 +42,15 @@ export async function POST(request: Request) {
     const body = await request.json();
     const name = String(body.name ?? "").trim();
     const comment = String(body.comment ?? "").trim();
+    const eventType = body.eventType === "construction-week" ? "construction-week" : "weekend";
+    const validSignup =
+      eventType === "construction-week"
+        ? body.weekendId === "construction-week" &&
+          allowedConstructionSlots.has(body.day) &&
+          allowedRoles.has(body.role)
+        : allowedWeekends.has(body.weekendId) && allowedDays.has(body.day);
     if (
-      !allowedWeekends.has(body.weekendId) ||
-      !allowedDays.has(body.day) ||
+      !validSignup ||
       !name ||
       name.length > 80 ||
       comment.length > 500
@@ -54,6 +67,8 @@ export async function POST(request: Request) {
         day: body.day,
         name,
         comment,
+        eventType,
+        role: eventType === "construction-week" ? body.role : "",
       }),
     });
     const data = await response.json();

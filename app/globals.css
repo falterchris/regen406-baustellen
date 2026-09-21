@@ -189,6 +189,128 @@ footer img {
   height: 2px;
   background: var(--pink);
 }
+.shift-plan {
+  grid-column: 1 / -1;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 68px var(--gutter) 86px;
+}
+.shift-plan-heading {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 58px;
+  max-width: var(--content);
+  margin: 0 auto 38px;
+}
+.shift-plan-heading h3 {
+  margin: 0;
+  font-size: clamp(2.1rem, 4vw, 3.8rem);
+  letter-spacing: -0.075em;
+  line-height: 0.9;
+  color: var(--pink);
+}
+.shift-plan-heading p {
+  max-width: 540px;
+  margin: 0;
+  font-size: 1.05rem;
+}
+.construction-day {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  max-width: var(--content);
+  margin: 0 auto;
+  border-top: 2px solid var(--ink);
+}
+.construction-day > header {
+  padding: 23px 22px 23px 0;
+}
+.construction-day > header p {
+  margin: 0 0 4px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.construction-day h4 {
+  margin: 0;
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+}
+.construction-shifts {
+  padding: 18px 0 22px;
+}
+.construction-shift + .construction-shift {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.construction-shift h5 {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+}
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.role-card {
+  display: flex;
+  min-height: 135px;
+  flex-direction: column;
+  padding: 14px;
+  background: #e5f2ec;
+  border: 1px solid var(--green);
+}
+.role-card:nth-child(2) { background: #f1e6ee; border-color: #dda1c6; }
+.role-card:nth-child(3) { background: #e4ecf8; border-color: #a8c0e1; }
+.role-name {
+  margin: 0 0 9px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.signup-names {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 5px;
+  list-style: none;
+  margin: 0 0 13px;
+  padding: 0;
+}
+.signup-names li {
+  padding: 3px 6px;
+  background: rgba(255,255,255,0.67);
+  font-size: 0.75rem;
+}
+.signup-names li.is-me { background: var(--yellow); font-weight: 700; }
+.signup-names li small { display: block; font-size: 0.62rem; font-weight: 500; }
+.signup-names li button {
+  display: block;
+  padding: 2px 0 0;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  background: transparent;
+  font-size: 0.65rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.signup-empty {
+  flex: 1;
+  margin: 0 0 13px;
+  color: #5b625f;
+  font-size: 0.75rem;
+}
+.role-card > button {
+  align-self: flex-start;
+  padding: 7px 10px;
+  border: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
 .construction-week a {
   background: var(--pink);
   color: var(--yellow);
@@ -311,6 +433,7 @@ footer img {
   padding: 0;
   margin: 0;
 }
+.people .signup-empty { margin: 0; }
 .people li {
   font-size: 0.77rem;
   background: #e7e3d9;
@@ -521,6 +644,13 @@ footer a {
     min-height: 205px;
     padding: 32px 25px;
   }
+  .shift-plan { padding: 52px 20px 62px; }
+  .shift-plan-heading { grid-template-columns: 1fr; gap: 16px; margin-bottom: 28px; }
+  .construction-day { grid-template-columns: 1fr; }
+  .construction-day > header { padding: 21px 0 7px; }
+  .construction-shifts { padding-top: 12px; }
+  .role-grid { grid-template-columns: 1fr; }
+  .role-card { min-height: 0; }
   .weekends {
     padding: 70px 20px 80px;
   }
