@@ -158,9 +158,9 @@ function json_(payload) {
   );
 }
 
-// Einmal nach dem Update manuell ausführen: importConstructionWeek2026_().
+// Einmal nach dem Update manuell ausführen: importConstructionWeek2026().
 // Übernimmt die bestehenden Einträge aus dem bisherigen Schichtplan.
-function importConstructionWeek2026_() {
+function importConstructionWeek2026() {
   const sheet = getSheet_();
   const alreadyImported = sheet
     .getDataRange()

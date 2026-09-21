@@ -16,7 +16,7 @@ Wenn die optionale Kommentarfunktion eingesetzt werden soll, den aktualisierten 
 
 ## Baustellen-Woche 2026
 
-Nach dem Aktualisieren des Apps-Script-Codes einmal im Funktionsmenü `importConstructionWeek2026_` auswählen und auf **Ausführen** klicken. Dadurch werden die bisherigen Namen und Kommentare aus dem alten Schichtplan einmalig in das Blatt `Anmeldungen` übernommen. Die Funktion erkennt eine bereits erfolgte Übernahme und legt keine Duplikate an.
+Nach dem Aktualisieren des Apps-Script-Codes einmal im Funktionsmenü `importConstructionWeek2026` auswählen und auf **Ausführen** klicken. Dadurch werden die bisherigen Namen und Kommentare aus dem alten Schichtplan einmalig in das Blatt `Anmeldungen` übernommen. Die Funktion erkennt eine bereits erfolgte Übernahme und legt keine Duplikate an.
 
 ## Abmelde-Anfragen
 
