@@ -149,12 +149,13 @@ footer img {
 }
 .construction-week {
   background: var(--yellow);
-  display: grid;
-  grid-template-columns: 1fr 0.62fr;
+  display: block;
 }
 .construction-week-copy {
-  padding: 78px var(--gutter);
-  padding-right: 6vw;
+  max-width: var(--content);
+  width: min(var(--content), 90vw);
+  margin: 0 auto;
+  padding: 76px 0 48px;
 }
 .construction-week-copy .eyebrow {
   color: var(--ink);
@@ -173,28 +174,7 @@ footer img {
   font-weight: 700;
   margin: 20px 0 0;
 }
-.construction-week-art {
-  background: var(--yellow);
-  color: var(--pink);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-end;
-  gap: 24px;
-  padding: 45px var(--gutter) 45px 4vw;
-  font-size: clamp(2.8rem, 6vw, 6.5rem);
-  font-weight: 700;
-  letter-spacing: -0.09em;
-  line-height: 0.82;
-}
-.construction-week-art .art-line {
-  display: block;
-  width: 100%;
-  height: 2px;
-  background: var(--pink);
-}
 .shift-plan {
-  grid-column: 1 / -1;
   background: var(--yellow);
   color: var(--ink);
   padding: 68px var(--gutter) 86px;
@@ -234,17 +214,19 @@ footer img {
   background: var(--pink);
   color: var(--yellow);
 }
-.construction-day > header p {
-  margin: 0 0 4px;
+.construction-day > header span {
+  font-size: 2.7rem;
   font-weight: 700;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: -0.08em;
+  line-height: 0.9;
 }
-.construction-day h4 {
+.construction-day > header strong {
   margin: 0;
-  font-size: 1.55rem;
-  letter-spacing: -0.04em;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.construction-day > header small {
+  font-size: 0.78rem;
 }
 .construction-shifts {
   padding: 20px 22px 22px;
@@ -362,7 +344,7 @@ footer img {
 }
 .cards {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 18px;
 }
 .weekend-card {
@@ -644,14 +626,10 @@ footer a {
     gap: 18px;
   }
   .construction-week {
-    grid-template-columns: 1fr;
+    display: block;
   }
   .construction-week-copy {
-    padding: 62px 25px;
-  }
-  .construction-week-art {
-    min-height: 205px;
-    padding: 32px 25px;
+    padding: 62px 20px 38px;
   }
   .shift-plan { padding: 52px 20px 62px; }
   .shift-plan-heading { grid-template-columns: 1fr; gap: 16px; margin-bottom: 28px; }
