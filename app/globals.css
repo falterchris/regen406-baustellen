@@ -127,10 +127,14 @@ footer img {
 .signal-intro {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 18px;
+  gap: 18px;
+  margin-top: 22px;
+  padding: 12px 15px;
+  background: var(--blue);
+  color: var(--paper);
   font-size: 0.9rem;
   font-weight: 700;
+  text-decoration: none;
 }
 .signal-intro span {
   font-size: 1.1rem;
@@ -233,13 +237,13 @@ footer img {
 .construction-day > header p {
   margin: 0 0 4px;
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 .construction-day h4 {
   margin: 0;
-  font-size: 1.45rem;
+  font-size: 1.55rem;
   letter-spacing: -0.04em;
 }
 .construction-shifts {
@@ -264,11 +268,9 @@ footer img {
   min-height: 135px;
   flex-direction: column;
   padding: 14px;
-  background: #fffdf4;
-  border: 1px solid var(--line);
+  background: var(--paper);
+  border: 1px solid var(--pink);
 }
-.role-card:nth-child(2) { background: #fff8de; border-color: #e7bd77; }
-.role-card:nth-child(3) { background: #f6e8f1; border-color: #d99abe; }
 .role-name {
   margin: 0 0 9px;
   font-weight: 700;
@@ -286,7 +288,8 @@ footer img {
 }
 .signup-names li {
   padding: 3px 6px;
-  background: rgba(255,255,255,0.67);
+  background: var(--pink);
+  color: var(--paper);
   font-size: 0.75rem;
 }
 .signup-names li.is-me { background: var(--yellow); font-weight: 700; }
@@ -311,7 +314,7 @@ footer img {
   align-self: flex-start;
   padding: 7px 10px;
   border: 0;
-  background: var(--pink);
+  background: var(--ink);
   color: var(--paper);
   font-size: 0.78rem;
   font-weight: 700;
