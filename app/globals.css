@@ -99,42 +99,38 @@ footer img {
   text-decoration: none;
 }
 .hero-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-top: 28px;
 }
 .hero-actions a {
   display: inline-flex;
-  gap: 14px;
+  justify-content: space-between;
+  gap: 10px;
   align-items: center;
   padding: 11px 14px;
   font-size: 0.9rem;
   font-weight: 700;
   text-decoration: none;
   border: 0;
+  background: var(--pink);
+  color: var(--paper);
+}
+.hero-actions a:nth-child(2) {
   background: var(--yellow);
   color: var(--pink);
 }
-.hero-actions a:nth-child(2) {
+.hero-actions a:nth-child(3) {
   background: var(--blue);
-  border-color: var(--blue);
   color: var(--paper);
 }
 .hero-actions span {
   font-size: 1.2rem;
 }
 .signal-intro {
-  display: inline-flex;
-  align-items: center;
-  gap: 18px;
-  margin-top: 22px;
-  padding: 12px 15px;
-  background: var(--blue);
+  background: var(--ink) !important;
   color: var(--paper);
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-decoration: none;
 }
 .signal-intro span {
   font-size: 1.1rem;
@@ -235,6 +231,14 @@ footer img {
 }
 .construction-shifts {
   padding: 20px 22px 22px;
+}
+.construction-cafe {
+  margin: 0 0 16px;
+  padding: 9px 11px;
+  background: var(--pink);
+  color: var(--paper);
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 .construction-shift + .construction-shift {
   margin-top: 20px;
@@ -639,6 +643,7 @@ footer a {
   .hero-copy {
     padding: 65px 0 68px;
   }
+  .hero-actions { grid-template-columns: 1fr; }
   .section-heading {
     grid-template-columns: 1fr;
     gap: 18px;
@@ -668,11 +673,12 @@ footer a {
     grid-template-columns: 1fr;
   }
   .weekend-card {
-    grid-template-columns: 108px 1fr;
-    min-height: 305px;
+    grid-template-columns: 1fr;
+    min-height: 0;
   }
   .date {
-    padding: 17px 12px;
+    min-height: 112px;
+    padding: 17px;
   }
   .date span {
     font-size: 2.05rem;
