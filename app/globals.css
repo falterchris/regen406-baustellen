@@ -213,7 +213,8 @@ footer img {
 .construction-day header {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 5px;
   padding: 22px 18px;
   background: var(--pink);
   color: var(--yellow);
@@ -230,6 +231,7 @@ footer img {
   line-height: 1;
 }
 .construction-day header small {
+  margin-top: auto;
   font-size: 0.78rem;
 }
 .construction-shifts {
@@ -387,7 +389,8 @@ footer img {
 .date {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 5px;
   background: var(--green);
   padding: 22px 18px;
   color: var(--ink);
@@ -403,7 +406,9 @@ footer img {
   line-height: 1;
 }
 .date small {
+  margin-top: auto;
   font-size: 0.78rem;
+  font-weight: 700;
 }
 .card-content {
   padding: 22px;
@@ -675,12 +680,25 @@ footer a {
   .construction-day { grid-template-columns: 1fr; }
   .mobile-card-toggle {
     display: block;
+    position: relative;
     width: 100%;
     padding: 0;
     border: 0;
     text-align: left;
     background: none;
   }
+  .mobile-card-toggle::after {
+    content: "⌄";
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-58%);
+    color: currentColor;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .is-open > .mobile-card-toggle::after { content: "⌃"; }
   .construction-day header { min-height: 112px; padding: 19px; }
   .construction-day.is-collapsed .construction-shifts { display: none; }
   .construction-shifts { padding: 17px; }
@@ -699,6 +717,7 @@ footer a {
     grid-template-columns: 1fr;
     min-height: 0;
   }
+  .weekend-card.is-collapsed .card-content { display: none; }
   .date {
     min-height: 112px;
     padding: 17px;
