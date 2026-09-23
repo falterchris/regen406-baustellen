@@ -468,7 +468,8 @@ footer img {
 .people .signup-empty { margin: 0; }
 .people li {
   font-size: 0.77rem;
-  background: #e7e3d9;
+  background: var(--green);
+  color: var(--ink);
   padding: 3px 7px;
 }
 .people li.is-me {
@@ -693,11 +694,12 @@ footer a {
     top: 50%;
     right: 20px;
     transform: translateY(-58%);
-    color: currentColor;
-    font-size: 2rem;
+    font-size: 2.8rem;
     font-weight: 700;
     line-height: 1;
   }
+  .construction-day > .mobile-card-toggle { color: var(--yellow); }
+  .weekend-card > .mobile-card-toggle { color: var(--ink); }
   .is-open > .mobile-card-toggle::after { content: "⌃"; }
   .construction-day header { min-height: 112px; padding: 19px; }
   .construction-day.is-collapsed .construction-shifts { display: none; }
