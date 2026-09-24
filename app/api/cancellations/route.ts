@@ -13,12 +13,12 @@ export async function POST(request: Request) {
     const response = await fetch(endpoint(), {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "cancellation-request", signupId })
+      body: JSON.stringify({ action: "delete-signup", signupId })
     });
     const data = await response.json();
-    if (!response.ok || !data.requested) throw new Error(data.error);
-    return NextResponse.json({ requested: true });
+    if (!response.ok || !data.deleted) throw new Error(data.error);
+    return NextResponse.json({ deleted: true });
   } catch {
-    return NextResponse.json({ error: "Abmeldung konnte nicht angefragt werden." }, { status: 500 });
+    return NextResponse.json({ error: "Abmeldung konnte nicht gespeichert werden." }, { status: 500 });
   }
 }

@@ -37,8 +37,9 @@ textarea {
   min-height: 132px;
   padding: 22px var(--gutter);
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 22px;
   background: var(--green);
 }
 .site-header img,
@@ -46,7 +47,7 @@ footer img {
   display: block;
 }
 .site-header img {
-  width: 104px;
+  width: 122px;
   height: auto;
 }
 .back-link {
@@ -117,11 +118,11 @@ footer img {
   background: var(--pink);
   color: var(--paper);
 }
-.hero-actions a:nth-child(2) {
+.hero-actions .week-link {
   background: var(--yellow);
   color: var(--pink);
 }
-.hero-actions a:nth-child(3) {
+.hero-actions .weekend-link {
   background: var(--blue);
   color: var(--paper);
 }
@@ -305,7 +306,7 @@ footer img {
   color: var(--paper);
   font-size: 0.75rem;
 }
-.signup-names li.is-me { background: var(--yellow); font-weight: 700; }
+.signup-names li.is-me { background: var(--pink); font-weight: 700; }
 .signup-names li small { display: block; font-size: 0.62rem; font-weight: 500; }
 .signup-names li button {
   display: block;
@@ -636,7 +637,7 @@ footer {
   font-size: 0.88rem;
 }
 footer img {
-  width: 64px;
+  width: 86px;
   height: auto;
 }
 footer p {
@@ -652,7 +653,7 @@ footer a {
     padding: 17px 20px;
   }
   .site-header img {
-    width: 72px;
+    width: 88px;
   }
   .back-link {
     font-size: 0.75rem;

@@ -65,10 +65,9 @@ function doGet() {
 function doPost(e) {
   try {
     const body = JSON.parse(e.postData.contents);
-    if (body.action === "cancellation-request")
-      return requestCancellation_(String(body.signupId || ""));
+    if (body.action === "delete-signup")
+      return deleteSignup_(String(body.signupId || ""));
     const validWeekends = [
-      "oct-2026",
       "nov-2026",
       "dec-2026",
       "jan-2027",
@@ -127,29 +126,13 @@ function doPost(e) {
   }
 }
 
-function requestCancellation_(signupId) {
-  const signups = getSheet_().getDataRange().getValues();
-  const signup = signups.slice(1).find((row) => String(row[0]) === signupId);
-  if (!signup) return json_({ error: "Anmeldung nicht gefunden." });
-
-  const cancellationSheet = getCancellationSheet_();
-  const alreadyRequested = cancellationSheet
-    .getDataRange()
-    .getValues()
-    .slice(1)
-    .some(
-      (row) => String(row[0]) === signupId && String(row[5]) !== "Erledigt",
-    );
-  if (!alreadyRequested)
-    cancellationSheet.appendRow([
-      signup[0],
-      signup[1],
-      signup[2],
-      signup[3],
-      new Date(),
-      "Offen",
-    ]);
-  return json_({ requested: true });
+function deleteSignup_(signupId) {
+  const sheet = getSheet_();
+  const values = sheet.getDataRange().getValues();
+  const rowIndex = values.findIndex((row, index) => index > 0 && String(row[0]) === signupId);
+  if (rowIndex === -1) return json_({ error: "Anmeldung nicht gefunden." });
+  sheet.deleteRow(rowIndex + 1);
+  return json_({ deleted: true });
 }
 
 function json_(payload) {
