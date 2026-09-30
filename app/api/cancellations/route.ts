@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 function endpoint() {
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
     });
     const data = await response.json();
     if (!response.ok || !data.deleted) throw new Error(data.error);
+    revalidateTag("signups");
     return NextResponse.json({ deleted: true });
   } catch {
     return NextResponse.json({ error: "Abmeldung konnte nicht gespeichert werden." }, { status: 500 });

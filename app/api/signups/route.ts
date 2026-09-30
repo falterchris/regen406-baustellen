@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 const allowedWeekends = new Set([
@@ -25,7 +26,9 @@ function endpoint() {
 
 export async function GET() {
   try {
-    const response = await fetch(endpoint(), { cache: "no-store" });
+    const response = await fetch(endpoint(), {
+      next: { revalidate: 30, tags: ["signups"] },
+    });
     if (!response.ok) throw new Error("Google Sheets nicht erreichbar");
     const data = await response.json();
     return NextResponse.json({ signups: data.signups ?? [] });
@@ -76,6 +79,7 @@ export async function POST(request: Request) {
       throw new Error(
         data.error ?? "Google Sheets konnte die Anmeldung nicht speichern.",
       );
+    revalidateTag("signups");
     return NextResponse.json({ signup: data.signup }, { status: 201 });
   } catch {
     return NextResponse.json(
