@@ -18,12 +18,6 @@ function getSheet_() {
     ]);
     sheet.setFrozenRows(1);
   }
-  if (sheet.getRange(1, 6).getValue() !== "Kommentar")
-    sheet.getRange(1, 6).setValue("Kommentar");
-  if (sheet.getRange(1, 7).getValue() !== "Typ")
-    sheet.getRange(1, 7).setValue("Typ");
-  if (sheet.getRange(1, 8).getValue() !== "Rolle")
-    sheet.getRange(1, 8).setValue("Rolle");
   return sheet;
 }
 
@@ -101,8 +95,10 @@ function doPost(e) {
     }
 
     const createdAt = new Date();
+    const requestedId = String(body.signupId || "").trim();
+    const validRequestedId = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestedId);
     const signup = {
-      id: Utilities.getUuid(),
+      id: validRequestedId ? requestedId : Utilities.getUuid(),
       weekend_id: body.weekendId,
       day: body.day,
       name,

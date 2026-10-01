@@ -45,6 +45,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const name = String(body.name ?? "").trim();
     const comment = String(body.comment ?? "").trim();
+    const signupId = String(body.signupId ?? "").trim();
+    const validSignupId = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(signupId);
     const eventType = body.eventType === "construction-week" ? "construction-week" : "weekend";
     const validSignup =
       eventType === "construction-week"
@@ -66,6 +68,7 @@ export async function POST(request: Request) {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
+        signupId: validSignupId ? signupId : undefined,
         weekendId: body.weekendId,
         day: body.day,
         name,

@@ -6,7 +6,7 @@ import { FormEvent, useEffect, useState } from "react";
 type Weekend = { id: string; year: number; month: string; days: string; dates: string; cafe: string; endsAt: string };
 type Shift = { id: string; time: string };
 type ConstructionDay = { date: string; weekday: string; endsAt: string; shifts: Shift[] };
-type Signup = { id: string; weekend_id: string; day: string; name: string; created_at: string; event_type: string; role: string };
+type Signup = { id: string; weekend_id: string; day: string; name: string; created_at: string; event_type: string; role: string; pending?: boolean };
 type SignupTarget = { eventType: "weekend" | "construction-week"; eventId: string; slot: string; title: string; role?: string };
 
 const SIGNAL_URL = "https://signal.group/#CjQKIOWO2ZjDX_0Ow8leQsbP_A7uBXU9P_LV26kc9CHTjjqwEhCJb1QAGKY6GVdab2MHOhg_";
@@ -33,14 +33,14 @@ const THANK_YOU_DAYS = 5;
 
 function SignupNames({ people, myIds, onCancel }: { people: Signup[]; myIds: string[]; onCancel: (signup: Signup) => void }) {
   if (!people.length) return <p className="signup-empty">Noch niemand eingetragen</p>;
-  return <ul className="signup-names">{people.map((person) => <li key={person.id} className={myIds.includes(person.id) ? "is-me" : ""}>{person.name}{myIds.includes(person.id) && <button type="button" onClick={() => onCancel(person)}>Abmelden</button>}</li>)}</ul>;
+  return <ul className="signup-names">{people.map((person) => <li key={person.id} className={myIds.includes(person.id) || person.pending ? "is-me" : ""}>{person.name}{person.pending ? <small>Wird gespeichert …</small> : myIds.includes(person.id) && <button type="button" onClick={() => onCancel(person)}>Abmelden</button>}</li>)}</ul>;
 }
 function WeekendPeople({ people, myIds, onCancel }: { people: Signup[]; myIds: string[]; onCancel: (signup: Signup) => void }) {
   return <div className="people"><p className="help-counter">{people.length} {people.length === 1 ? "helfende Person" : "helfende Menschen"}</p>{(["Samstag", "Sonntag"] as const).map((day) => <div className="people-day" key={day}><span>{day}</span><SignupNames people={people.filter((person) => person.day === day)} myIds={myIds} onCancel={onCancel} /></div>)}</div>;
 }
 
 export default function SignupPage({ initialSignups, initialLoadFailed = false }: { initialSignups: Signup[]; initialLoadFailed?: boolean }) {
-  const [signups, setSignups] = useState<Signup[]>(initialSignups); const [name, setName] = useState(""); const [comment, setComment] = useState(""); const [weekendDay, setWeekendDay] = useState("Samstag"); const [target, setTarget] = useState<SignupTarget | null>(null); const [myIds, setMyIds] = useState<string[]>([]); const [status, setStatus] = useState<"idle" | "saving" | "error">("idle"); const [cancellation, setCancellation] = useState<Signup | null>(null); const [cancellationStatus, setCancellationStatus] = useState<"idle" | "saving" | "error">("idle"); const [completedTarget, setCompletedTarget] = useState<SignupTarget | null>(null); const [now, setNow] = useState<Date | null>(null); const [openConstructionDay, setOpenConstructionDay] = useState<string | null>(null); const [openWeekendId, setOpenWeekendId] = useState<string | null>(null);
+  const [signups, setSignups] = useState<Signup[]>(initialSignups); const [name, setName] = useState(""); const [comment, setComment] = useState(""); const [weekendDay, setWeekendDay] = useState("Samstag"); const [target, setTarget] = useState<SignupTarget | null>(null); const [myIds, setMyIds] = useState<string[]>([]); const [status, setStatus] = useState<"idle" | "saving" | "error">("idle"); const [cancellation, setCancellation] = useState<Signup | null>(null); const [cancellationStatus, setCancellationStatus] = useState<"idle" | "saving" | "error">("idle"); const [completedTarget, setCompletedTarget] = useState<SignupTarget | null>(null); const [completionStatus, setCompletionStatus] = useState<"idle" | "saving" | "saved" | "error">("idle"); const [now, setNow] = useState<Date | null>(null); const [openConstructionDay, setOpenConstructionDay] = useState<string | null>(null); const [openWeekendId, setOpenWeekendId] = useState<string | null>(null);
   useEffect(() => {
     const saved = window.localStorage.getItem("regen406-my-signups");
     if (saved) setMyIds(JSON.parse(saved));
@@ -60,7 +60,86 @@ export default function SignupPage({ initialSignups, initialLoadFailed = false }
   useEffect(() => { const previewDate = new URLSearchParams(window.location.search).get("previewDate"); const parsedPreview = previewDate && /^\d{4}-\d{2}-\d{2}$/.test(previewDate) ? new Date(`${previewDate}T12:00:00+02:00`) : null; setNow(parsedPreview && !Number.isNaN(parsedPreview.getTime()) ? parsedPreview : new Date()); }, []);
   useEffect(() => { if (!now) return; setOpenConstructionDay(constructionDays.find((day) => new Date(day.endsAt) > now)?.date ?? null); setOpenWeekendId(weekends.find((weekend) => new Date(weekend.endsAt) > now)?.id ?? null); }, [now]);
   function openSignup(nextTarget: SignupTarget) { setTarget(nextTarget); setWeekendDay("Samstag"); setStatus("idle"); }
-  async function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (!target) return; setStatus("saving"); const day = target.eventType === "weekend" ? weekendDay : target.slot; try { const response = await fetch("/api/signups", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ weekendId: target.eventId, day, name, comment, eventType: target.eventType, role: target.role }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setSignups((current) => [...current, data.signup]); const updated = [...myIds, data.signup.id]; setMyIds(updated); window.localStorage.setItem("regen406-my-signups", JSON.stringify(updated)); setName(""); setComment(""); setCompletedTarget(target); setTarget(null); setStatus("idle"); } catch { setStatus("error"); } }
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!target || status === "saving") return;
+
+    const submittedTarget = target;
+    const submittedName = name.trim();
+    const submittedComment = comment.trim();
+    if (!submittedName) {
+      setStatus("error");
+      return;
+    }
+    const day = submittedTarget.eventType === "weekend" ? weekendDay : submittedTarget.slot;
+    const optimisticId = typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `optimistic-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const optimisticSignup: Signup = {
+      id: optimisticId,
+      weekend_id: submittedTarget.eventId,
+      day,
+      name: submittedName,
+      created_at: new Date().toISOString(),
+      event_type: submittedTarget.eventType,
+      role: submittedTarget.eventType === "construction-week" ? submittedTarget.role ?? "" : "",
+      pending: true,
+    };
+
+    // Sofortige Rückmeldung: Der Eintrag erscheint direkt in der Liste,
+    // während Google Sheets im Hintergrund speichert.
+    setStatus("saving");
+    setCompletionStatus("saving");
+    setSignups((current) => [...current, optimisticSignup]);
+    setCompletedTarget(submittedTarget);
+    setTarget(null);
+
+    try {
+      const response = await fetch("/api/signups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({
+          signupId: optimisticId,
+          weekendId: submittedTarget.eventId,
+          day,
+          name: submittedName,
+          comment: submittedComment,
+          eventType: submittedTarget.eventType,
+          role: submittedTarget.role,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.signup) throw new Error(data.error);
+
+      setSignups((current) => current.map((signup) => signup.id === optimisticId ? { ...data.signup, pending: false } : signup));
+      setMyIds((current) => {
+        const updated = [...current.filter((id) => id !== optimisticId), data.signup.id];
+        window.localStorage.setItem("regen406-my-signups", JSON.stringify(updated));
+        return updated;
+      });
+      setName("");
+      setComment("");
+      setStatus("idle");
+      setCompletionStatus("saved");
+    } catch {
+      setSignups((current) => current.filter((signup) => signup.id !== optimisticId));
+      setStatus("error");
+      setCompletionStatus("error");
+    }
+  }
+  function retrySignup() {
+    if (!completedTarget) return;
+    setTarget(completedTarget);
+    setCompletedTarget(null);
+    setCompletionStatus("idle");
+    setStatus("idle");
+  }
+  function closeCompletedSignup() {
+    if (completionStatus === "saving") return;
+    setCompletedTarget(null);
+    setCompletionStatus("idle");
+  }
   async function requestCancellation() { if (!cancellation) return; setCancellationStatus("saving"); try { const response = await fetch("/api/cancellations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ signupId: cancellation.id }) }); if (!response.ok) throw new Error(); setSignups((current) => current.filter((signup) => signup.id !== cancellation.id)); const updatedIds = myIds.filter((id) => id !== cancellation.id); setMyIds(updatedIds); window.localStorage.setItem("regen406-my-signups", JSON.stringify(updatedIds)); setCancellationStatus("idle"); setCancellation(null); } catch { setCancellationStatus("error"); } }
   const effectiveNow = now ?? new Date("2026-01-01T12:00:00+01:00");
   const constructionWeekVisible = effectiveNow < new Date(CONSTRUCTION_WEEK_END);
@@ -73,7 +152,7 @@ export default function SignupPage({ initialSignups, initialLoadFailed = false }
     {constructionWeekVisible && <section className="construction-week" id="baustellenwoche"><div className="construction-week-copy"><div><p className="eyebrow">09.–18. OKTOBER 2026</p><h2>REGEN406<br />Baustellen-Woche</h2></div><div className="construction-week-intro"><p>Wir wollen gemeinsam die Sandarbeiten im Dachboden stemmen. Wenn jeden Tag genug mitmachen, können wir die Arbeiten selbst schaffen und unserem Projekt rund 20.000 € sparen.</p><p>Für Essen, Getränke und einen gemeinsamen Ausklang am Lagerfeuer ist gesorgt. Also: Freund:innen schnappen, Schicht aussuchen und mitbauen!</p><p>Wähle einen Tag, eine Zeit und deine Rolle. Du kannst dich für beliebig viele Schichten eintragen.</p></div></div><div className="shift-plan">{constructionDays.filter((day) => new Date(day.endsAt) > effectiveNow).map((day) => { const [dateNumber, month] = day.date.split(" "); const isOpen = openConstructionDay === day.date; const helperCount = day.shifts.flatMap((shift) => signups.filter((signup) => signup.event_type === "construction-week" && signup.day === shift.id && signup.role === "Helfer:in")).length; return <section className={`construction-day ${isOpen ? "is-open" : "is-collapsed"}`} key={day.date}><button type="button" className="mobile-card-toggle" onClick={() => setOpenConstructionDay(isOpen ? null : day.date)} aria-expanded={isOpen}><header><span>{dateNumber}</span><strong>{month}</strong><small>{day.weekday} · {helperCount} {helperCount === 1 ? "helfende Person" : "helfende Menschen"}</small></header></button><div className="construction-shifts">{day.date === "18. Oktober" && <p className="construction-cafe">Baustellencafé · 15–17 Uhr</p>}{day.shifts.map((shift) => <div className="construction-shift" key={shift.id}><h5>{shift.time}</h5><div className="role-grid">{roles.map((role) => { const people = signups.filter((signup) => signup.event_type === "construction-week" && signup.day === shift.id && signup.role === role); return <article className="role-card" key={role}><p className="role-name">{role}</p>{role === "Helfer:in" && <p className="help-counter">{people.length} {people.length === 1 ? "helfende Person" : "helfende Menschen"}</p>}<SignupNames people={people} myIds={myIds} onCancel={setCancellation} /><button type="button" onClick={() => openSignup({ eventType: "construction-week", eventId: "construction-week", slot: shift.id, title: `${day.weekday}, ${day.date} · ${shift.time}`, role })}>Eintragen</button></article>; })}</div></div>)}</div></section>; })}</div></section>}
     <section className="weekends" id="termine"><div className="section-heading"><h2>REGEN406<br />Baustellen-<br />Wochenenden</h2><p>An unseren Baustellen-Wochenenden bringen wir REGEN406 gemeinsam voran. Das Baustellencafé öffnet jeweils am angegebenen Tag von <strong>15–17 Uhr</strong> – für alle, die neugierig sind, die Baustelle anschauen und uns bei Getränken und Snacks kennenlernen wollen.</p></div>{weekendCards(2026).length > 0 && <><h3>2026</h3><div className="cards">{weekendCards(2026)}</div></>}{weekendCards(2027).length > 0 && <><h3 className="year-heading">2027</h3><div className="cards">{weekendCards(2027)}</div></>}</section>
     {target && <div className="modal-backdrop" role="presentation" onMouseDown={() => setTarget(null)}><section className="signup-modal" role="dialog" aria-modal="true" aria-labelledby="signup-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setTarget(null)}>×</button><p className="eyebrow">{target.title}</p><h2 id="signup-title">Super, dass du dabei bist!</h2><p>{target.eventType === "construction-week" ? <>Du hilfst als <strong>{target.role}</strong>.</> : "Trag deinen Namen ein – wir freuen uns auf dich."}</p><form onSubmit={submit}><label>Name<input required value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" /></label><label>Kommentar <span className="optional">(optional)</span><textarea value={comment} onChange={(event) => setComment(event.target.value)} maxLength={500} rows={3} placeholder="Zum Beispiel: Ich komme etwas später." /></label>{target.eventType === "weekend" && <fieldset><legend>Wann kannst du helfen?</legend><div className="day-buttons">{["Samstag", "Sonntag"].map((option) => <button key={option} type="button" className={weekendDay === option ? "selected" : ""} onClick={() => setWeekendDay(option)}>{option}</button>)}</div></fieldset>}{status === "error" && <p className="error">Das hat leider nicht geklappt. Bitte versuch es gleich noch einmal.</p>}<button className="submit" type="submit" disabled={status === "saving"}>{status === "saving" ? "Wird eingetragen …" : "Verbindlich eintragen"}</button></form></section></div>}
-    {completedTarget && <div className="modal-backdrop" role="presentation" onMouseDown={() => setCompletedTarget(null)}><section className="signup-modal success-modal" role="dialog" aria-modal="true" aria-labelledby="success-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setCompletedTarget(null)}>×</button><p className="eyebrow">ANMELDUNG GESPEICHERT</p><h2 id="success-title">Super, du bist dabei!</h2><p>Du bist für <strong>{completedTarget.title}</strong> eingetragen.</p><a className="signal-cta" href={SIGNAL_URL} target="_blank" rel="noreferrer">Signal-Gruppe beitreten <span>↗</span></a><p className="signal-note">Dort teilen wir aktuelle Infos zu Bau-Wochenenden und der Baustellen-Woche.</p></section></div>}
+    {completedTarget && <div className="modal-backdrop" role="presentation" onMouseDown={closeCompletedSignup}><section className="signup-modal success-modal" role="dialog" aria-modal="true" aria-labelledby="success-title" onMouseDown={(event) => event.stopPropagation()}>{completionStatus !== "saving" && <button className="close" type="button" aria-label="Schließen" onClick={closeCompletedSignup}>×</button>}<p className="eyebrow">{completionStatus === "error" ? "SPEICHERN FEHLGESCHLAGEN" : completionStatus === "saved" ? "ANMELDUNG GESPEICHERT" : "ANMELDUNG WIRD GESPEICHERT"}</p><h2 id="success-title">{completionStatus === "error" ? "Das hat leider nicht geklappt." : "Super, du bist dabei!"}</h2>{completionStatus === "error" ? <><p>Dein vorläufiger Eintrag wurde wieder entfernt. Deine Angaben sind noch da – du kannst es direkt noch einmal versuchen.</p><button className="submit" type="button" onClick={retrySignup}>Noch einmal versuchen</button></> : <><p>Du bist für <strong>{completedTarget.title}</strong> eingetragen.{completionStatus === "saving" && <> Dein Eintrag ist schon sichtbar und wird gerade im Hintergrund gespeichert.</>}</p>{completionStatus === "saved" && <><a className="signal-cta" href={SIGNAL_URL} target="_blank" rel="noreferrer">Signal-Gruppe beitreten <span>↗</span></a><p className="signal-note">Dort teilen wir aktuelle Infos zu Bau-Wochenenden und der Baustellen-Woche.</p></>}</>}</section></div>}
     {cancellation && <div className="modal-backdrop" role="presentation" onMouseDown={() => setCancellation(null)}><section className="signup-modal cancellation-modal" role="dialog" aria-modal="true" aria-labelledby="cancellation-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setCancellation(null)}>×</button><p className="eyebrow">ABMELDUNG</p><h2 id="cancellation-title">Willst du dich wirklich abmelden?</h2><p>Dein Eintrag für <strong>{cancellation.name}</strong> wird sofort aus der Liste entfernt.</p>{cancellationStatus === "error" && <p className="error">Das hat leider nicht geklappt. Bitte versuch es gleich noch einmal.</p>}<button className="submit" type="button" onClick={requestCancellation} disabled={cancellationStatus === "saving"}>{cancellationStatus === "saving" ? "Wird ausgetragen …" : "Ja, jetzt austragen"}</button></section></div>}
     <footer><Image src="/regen406-logo.png" width={64} height={80} alt="REGEN406" /><div><p>Regensburger Straße 406 · 90480 Nürnberg</p><a href="mailto:hallo@regen406.de">hallo@regen406.de</a><a href="https://www.regen406.de/impressum">Impressum</a><a href="https://www.regen406.de/datenschutz">Datenschutz</a></div></footer>
   </main>;

@@ -12,9 +12,15 @@ Landingpage mit öffentlicher Helfer:innenliste, Anmeldung und direkter Abmeldun
 
 Die öffentliche Helfer:innenliste wird serverseitig geladen und bereits mit der Seite ausgeliefert. Der Abruf von Google Apps Script / Google Sheets wird auf Vercel für 30 Sekunden gecacht. Dadurch müssen Besucher:innen beim normalen Seitenaufruf nicht mehr auf einen zusätzlichen Browser-Request zu Google warten.
 
-Nach einer erfolgreichen Anmeldung oder Abmeldung wird der Cache sofort invalidiert. Die Person, die die Änderung ausführt, sieht sie außerdem direkt im lokalen Seitenzustand.
+Nach einer erfolgreichen Anmeldung oder Abmeldung wird der Cache sofort invalidiert.
 
-Für diese Performance-Optimierung ist **keine Änderung am Google Apps Script** nötig.
+### Schnelleres Eintragen (v24)
+
+Beim Absenden erscheint die Person jetzt **sofort** als vorläufiger Eintrag in der gewählten Schicht bzw. am Wochenende. Die Speicherung in Google Sheets läuft parallel im Hintergrund. Nach erfolgreicher Speicherung wird derselbe Eintrag bestätigt und die permanente ID im Browser gespeichert. Falls Google Sheets nicht erreichbar ist, wird der vorläufige Eintrag automatisch wieder entfernt und es erscheint eine Schaltfläche zum erneuten Versuch.
+
+Das Google Apps Script wurde ebenfalls entschlackt: Die Tabellenkopf-Prüfungen laufen nicht mehr bei jeder einzelnen Anmeldung. Außerdem übernimmt das Script die bereits im Browser erzeugte UUID, sodass der optimistische Eintrag und der endgültig gespeicherte Eintrag dieselbe ID haben.
+
+**Für v24 muss `google-apps-script/Code.gs` im bestehenden Apps Script ersetzt und als neue Version bereitgestellt werden.** Die bestehende `/exec`-URL bleibt gleich.
 
 ## Favicon
 
