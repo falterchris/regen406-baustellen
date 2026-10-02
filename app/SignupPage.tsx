@@ -26,7 +26,7 @@ const constructionDays: ConstructionDay[] = [
   { date: "15. Oktober", weekday: "Donnerstag", endsAt: "2026-10-15T20:00:00+02:00", shifts: [{ id: "thu-15-morning", time: "10–15 Uhr" }, { id: "thu-15-evening", time: "16–20 Uhr" }] },
   { date: "16. Oktober", weekday: "Freitag", endsAt: "2026-10-16T20:00:00+02:00", shifts: [{ id: "fri-16-morning", time: "10–15 Uhr" }, { id: "fri-16-evening", time: "16–20 Uhr" }] },
   { date: "17. Oktober", weekday: "Samstag", endsAt: "2026-10-17T20:00:00+02:00", shifts: [{ id: "sat-17-morning", time: "10–15 Uhr" }, { id: "sat-17-evening", time: "15–20 Uhr" }] },
-  { date: "18. Oktober", weekday: "Sonntag", endsAt: "2026-10-18T19:00:00+02:00", shifts: [{ id: "sun-18-morning", time: "10–15 Uhr" }, { id: "sun-18-evening", time: "15–19 Uhr" }] },
+  { date: "18. Oktober", weekday: "Sonntag", endsAt: "2026-10-18T19:00:00+02:00", shifts: [{ id: "sun-18-morning", time: "10–15 Uhr" }] },
 ];
 const CONSTRUCTION_WEEK_END = "2026-10-18T20:00:00+02:00";
 const THANK_YOU_DAYS = 5;

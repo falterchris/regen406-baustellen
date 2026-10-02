@@ -73,7 +73,7 @@ function doPost(e) {
       "fri-09-evening", "sat-10-morning", "sat-10-evening", "sun-11-morning",
       "sun-11-evening", "wed-14-morning", "wed-14-evening", "thu-15-morning",
       "thu-15-evening", "fri-16-morning", "fri-16-evening", "sat-17-morning",
-      "sat-17-evening", "sun-18-morning", "sun-18-evening",
+      "sat-17-evening", "sun-18-morning",
     ];
     const validRoles = ["Verpflegung", "Lead", "Helfer:in"];
     const name = String(body.name || "").trim();
@@ -163,7 +163,6 @@ function importConstructionWeek2026() {
     ["sat-17-morning","Lead","Benny"],["sat-17-morning","Helfer:in","Sarah"],["sat-17-morning","Helfer:in","Chris"],["sat-17-morning","Helfer:in","Ricarda"],["sat-17-morning","Helfer:in","Wuff"],["sat-17-morning","Helfer:in","Jonas"],
     ["sat-17-evening","Verpflegung","Lorenz, Karla - Abendessen: vielleicht Pizza"],["sat-17-evening","Lead","Benny"],["sat-17-evening","Helfer:in","Ines"],["sat-17-evening","Helfer:in","Denise"],["sat-17-evening","Helfer:in","Jonas"],
     ["sun-18-morning","Lead","Lorenz"],["sun-18-morning","Helfer:in","Sarah"],["sun-18-morning","Helfer:in","Benny"],["sun-18-morning","Helfer:in","Jonas"],
-    ["sun-18-evening","Verpflegung","Charli - Abendessen: irgendwas indisches"],["sun-18-evening","Lead","Jonas"],["sun-18-evening","Helfer:in","Benny"],
   ];
   const now = new Date();
   const rows = entries.map(([slot, role, name, comment]) => [

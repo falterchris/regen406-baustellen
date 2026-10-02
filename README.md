@@ -1,4 +1,10 @@
 # REGEN406 Baustellen-Anmeldung
+## Update v26
+
+- Sonntag, 18.10.2026: Die Vormittagsschicht 10–15 Uhr bleibt bestehen.
+- Nur die letzte Schicht 15–19 Uhr entfällt und kann nicht mehr gebucht werden.
+- Das Baustellencafé 15–17 Uhr bleibt bestehen.
+
 
 Landingpage mit öffentlicher Helfer:innenliste, Anmeldung und direkter Abmeldung für die REGEN406 Baustellen-Aktionen.
 
