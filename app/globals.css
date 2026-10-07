@@ -823,3 +823,107 @@ footer a {
   .admin-toolbar { grid-template-columns: 1fr; }
   .admin-login { padding: 26px 22px; box-shadow: 7px 7px 0 var(--green); }
 }
+
+/* v31: Abmelden-Kontrast + Abmeldeanfragen */
+.signup-names li button {
+  color: var(--paper);
+  border-bottom-color: var(--paper);
+}
+.people .signup-names li button {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+.request-cancel {
+  align-self: flex-start;
+  margin: -5px 0 11px;
+  padding: 2px 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent !important;
+  color: var(--ink) !important;
+  font-size: .68rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+.role-card .request-cancel {
+  color: var(--pink) !important;
+}
+.people-day .request-cancel {
+  margin-top: 2px;
+  color: var(--ink) !important;
+}
+.signup-modal select,
+.admin-edit-modal select {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+}
+.request-context {
+  padding: 10px 12px;
+  background: var(--green);
+}
+.success-note {
+  padding: 12px;
+  background: var(--green);
+  font-weight: 700;
+}
+
+/* v31: Admin Bearbeiten + Abmeldeanfragen */
+.admin-requests {
+  margin: 0 0 32px;
+  padding: 24px;
+  border: 2px solid var(--ink);
+  background: var(--yellow);
+}
+.admin-section-heading h2 {
+  margin: 0 0 18px;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: .95;
+  letter-spacing: -.04em;
+}
+.admin-request-list { display: grid; gap: 10px; }
+.admin-request {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 14px;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+}
+.admin-request p { margin: 3px 0; }
+.admin-request-message { font-style: italic; }
+.admin-request-actions, .admin-row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.admin-request-actions button, .admin-edit {
+  border: 0;
+  padding: 8px 10px;
+  background: var(--ink);
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.admin-request-actions .secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 2px solid var(--ink);
+}
+.admin-edit { background: var(--blue); }
+.admin-edit-modal label {
+  display: grid;
+  gap: 7px;
+  font-weight: 700;
+}
+.admin-edit-modal input,
+.admin-edit-modal textarea {
+  width: 100%;
+}
+@media (max-width: 700px) {
+  .admin-request { align-items: flex-start; flex-direction: column; }
+}

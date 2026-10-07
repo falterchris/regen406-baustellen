@@ -100,3 +100,10 @@ Für lokales Testen müssen die Supabase-Variablen aus Vercel in `.env.local` ve
 npm install
 npm run dev
 ```
+
+## v31 additions
+- Admin can edit existing signups without changing signup ID/cancellation token/created_at.
+- Public fallback "Abmeldung anfragen" for signups not recognized as owned on the current browser/device.
+- Admin can approve (delete signup) or reject cancellation requests.
+- Better cancellation button contrast: white in construction-week pink tags, black in weekend green tags.
+- Run `supabase/v31-cancellation-requests.sql` once in Supabase SQL Editor before deploying v31.

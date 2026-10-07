@@ -22,3 +22,17 @@ create index if not exists signups_event_idx on public.signups (event_type, even
 alter table public.signups enable row level security;
 revoke all on table public.signups from anon, authenticated;
 grant all on table public.signups to service_role;
+
+
+-- Abmeldeanfragen fuer Eintraege, die auf einem anderen Geraet erstellt wurden.
+create table if not exists public.cancellation_requests (
+  id uuid primary key default gen_random_uuid(),
+  signup_id uuid not null unique references public.signups(id) on delete cascade,
+  message text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists cancellation_requests_created_idx on public.cancellation_requests (created_at desc);
+alter table public.cancellation_requests enable row level security;
+revoke all on table public.cancellation_requests from anon, authenticated;
+grant all on table public.cancellation_requests to service_role;

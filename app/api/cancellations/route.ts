@@ -8,14 +8,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
     }
 
-    const lookup = await supabaseRest(`signups?id=eq.${encodeURIComponent(signupId)}&select=id,cancellation_token,legacy_import&limit=1`);
+    const lookup = await supabaseRest(`signups?id=eq.${encodeURIComponent(signupId)}&select=id,cancellation_token&limit=1`);
     const rows = await lookup.json();
     const signup = Array.isArray(rows) ? rows[0] : null;
     if (!signup) return NextResponse.json({ error: "Eintrag nicht gefunden." }, { status: 404 });
 
-    const legacyAllowed = signup.legacy_import === true;
     const tokenAllowed = typeof cancellationToken === "string" && cancellationToken && cancellationToken === signup.cancellation_token;
-    if (!legacyAllowed && !tokenAllowed) {
+    if (!tokenAllowed) {
       return NextResponse.json({ error: "Abmeldung nicht autorisiert." }, { status: 403 });
     }
 
