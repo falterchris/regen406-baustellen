@@ -8,6 +8,7 @@ type Signup = {
   created_at: string;
   event_type: string;
   role: string;
+  children_ages?: string;
 };
 
 export const revalidate = 30;

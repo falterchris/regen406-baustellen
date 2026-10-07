@@ -60,6 +60,7 @@ function doGet() {
       created_at: new Date(row[4]).toISOString(),
       event_type: String(row[6] || "weekend"),
       role: String(row[7] || ""),
+      children_ages: String(row[9] || ""),
     }));
   return json_({ signups });
 }
@@ -83,12 +84,12 @@ function doPost(e) {
       "thu-15-evening", "fri-16-morning", "fri-16-evening", "sat-17-morning",
       "sat-17-evening", "sun-18-morning",
     ];
-    const validRoles = ["Verpflegung", "Lead", "Helfer:in"];
-    const name = String(body.name || "").trim();
-    const comment = String(body.comment || "").trim();
+    const validRoles = ["Verpflegung", "Lead", "Helfer:in", "Kinderbetreuung", "Kinder"];
     const eventType = body.eventType === "construction-week" ? "construction-week" : "weekend";
-    const childcare = eventType === "construction-week" && body.childcare === "Ja" ? "Ja" : "Nein";
-    const childrenAges = eventType === "construction-week" && childcare === "Ja" ? String(body.childrenAges || "").trim() : "";
+    const isChildrenSignup = eventType === "construction-week" && body.role === "Kinder";
+    const name = isChildrenSignup ? "" : String(body.name || "").trim();
+    const comment = isChildrenSignup ? "" : String(body.comment || "").trim();
+    const childrenAges = isChildrenSignup ? String(body.childrenAges || "").trim() : "";
     const validSignup =
       eventType === "construction-week"
         ? body.weekendId === "construction-week" &&
@@ -97,11 +98,11 @@ function doPost(e) {
         : validWeekends.includes(body.weekendId) && validDays.includes(body.day);
     if (
       !validSignup ||
-      !name ||
+      (!isChildrenSignup && !name) ||
+      (isChildrenSignup && !childrenAges) ||
       name.length > 80 ||
       comment.length > 500 ||
-      childrenAges.length > 80 ||
-      (childcare === "Ja" && !childrenAges)
+      childrenAges.length > 80
     ) {
       return json_({ error: "Ungültige Anmeldung." });
     }
@@ -117,6 +118,7 @@ function doPost(e) {
       created_at: createdAt.toISOString(),
       event_type: eventType,
       role: eventType === "construction-week" ? String(body.role) : "",
+      children_ages: isChildrenSignup ? childrenAges : "",
     };
     const sheet = getSheet_();
     if (eventType === "construction-week") ensureChildcareColumns_(sheet);
@@ -129,8 +131,8 @@ function doPost(e) {
       comment,
       signup.event_type,
       signup.role,
-      eventType === "construction-week" ? childcare : "",
-      eventType === "construction-week" ? childrenAges : "",
+      eventType === "construction-week" && signup.role === "Kinderbetreuung" ? "Ja" : "",
+      eventType === "construction-week" && signup.role === "Kinder" ? childrenAges : "",
     ]);
     return json_({ signup });
   } catch (error) {

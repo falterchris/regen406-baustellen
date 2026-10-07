@@ -73,3 +73,11 @@ npm run dev
 ## v27 – Kinderbetreuung in der Baustellen-Woche
 
 Bei Anmeldungen zur Baustellen-Woche kann nun angegeben werden, ob Kinderbetreuung benötigt wird. Wenn ja, wird ausschließlich das Alter der Kinder abgefragt (keine Namen). Die Angaben werden in den Spalten `Kinderbetreuung` und `Kinder (Alter)` im Blatt `Anmeldungen` gespeichert. Beim ersten neuen Bauwochen-Eintrag ergänzt das Apps Script diese Spalten automatisch, falls sie im bestehenden Sheet noch fehlen.
+
+## Update v28 – Kinderbetreuung & Kinder als eigene Bauwochen-Karten
+
+In jeder Schicht der Baustellen-Woche gibt es zusätzlich zu Verpflegung, Lead und Helfer:in zwei eigene Karten:
+- **Kinderbetreuung**: Anmeldung mit Name und optionalem Kommentar für Personen, die bei der Betreuung unterstützen.
+- **Kinder**: Hier werden ausschließlich die Alter der Kinder eingetragen (z. B. `3, 6`), keine Namen.
+
+Die Angaben werden im bestehenden Blatt `Anmeldungen` gespeichert. Die Spalten `Kinderbetreuung` und `Kinder (Alter)` werden weiterhin verwendet. Für dieses Update muss `google-apps-script/Code.gs` erneut als neue Apps-Script-Version bereitgestellt werden.

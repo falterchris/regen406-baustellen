@@ -16,7 +16,7 @@ const allowedConstructionSlots = new Set([
   "thu-15-evening", "fri-16-morning", "fri-16-evening", "sat-17-morning",
   "sat-17-evening", "sun-18-morning",
 ]);
-const allowedRoles = new Set(["Verpflegung", "Lead", "Helfer:in"]);
+const allowedRoles = new Set(["Verpflegung", "Lead", "Helfer:in", "Kinderbetreuung", "Kinder"]);
 
 function endpoint() {
   const url = process.env.GOOGLE_APPS_SCRIPT_URL;
@@ -43,13 +43,15 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const name = String(body.name ?? "").trim();
-    const comment = String(body.comment ?? "").trim();
+    const rawName = String(body.name ?? "").trim();
+    const rawComment = String(body.comment ?? "").trim();
     const signupId = String(body.signupId ?? "").trim();
     const validSignupId = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(signupId);
     const eventType = body.eventType === "construction-week" ? "construction-week" : "weekend";
-    const childcare = eventType === "construction-week" && body.childcare === "Ja" ? "Ja" : "Nein";
-    const childrenAges = eventType === "construction-week" && childcare === "Ja" ? String(body.childrenAges ?? "").trim() : "";
+    const isChildrenSignup = eventType === "construction-week" && body.role === "Kinder";
+    const name = isChildrenSignup ? "" : rawName;
+    const comment = isChildrenSignup ? "" : rawComment;
+    const childrenAges = isChildrenSignup ? String(body.childrenAges ?? "").trim() : "";
     const validSignup =
       eventType === "construction-week"
         ? body.weekendId === "construction-week" &&
@@ -58,11 +60,11 @@ export async function POST(request: Request) {
         : allowedWeekends.has(body.weekendId) && allowedDays.has(body.day);
     if (
       !validSignup ||
-      !name ||
+      (!isChildrenSignup && !name) ||
+      (isChildrenSignup && !childrenAges) ||
       name.length > 80 ||
       comment.length > 500 ||
-      childrenAges.length > 80 ||
-      (childcare === "Ja" && !childrenAges)
+      childrenAges.length > 80
     )
       return NextResponse.json(
         { error: "Bitte fülle alle Felder korrekt aus." },
@@ -79,7 +81,6 @@ export async function POST(request: Request) {
         comment,
         eventType,
         role: eventType === "construction-week" ? body.role : "",
-        childcare,
         childrenAges,
       }),
     });
