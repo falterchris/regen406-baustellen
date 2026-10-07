@@ -68,3 +68,8 @@ Nach Bestätigung im Popup wird der zugehörige Eintrag direkt aus dem Tabellenb
 npm install
 npm run dev
 ```
+
+
+## v27 – Kinderbetreuung in der Baustellen-Woche
+
+Bei Anmeldungen zur Baustellen-Woche kann nun angegeben werden, ob Kinderbetreuung benötigt wird. Wenn ja, wird ausschließlich das Alter der Kinder abgefragt (keine Namen). Die Angaben werden in den Spalten `Kinderbetreuung` und `Kinder (Alter)` im Blatt `Anmeldungen` gespeichert. Beim ersten neuen Bauwochen-Eintrag ergänzt das Apps Script diese Spalten automatisch, falls sie im bestehenden Sheet noch fehlen.

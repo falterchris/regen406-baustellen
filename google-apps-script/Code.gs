@@ -15,10 +15,18 @@ function getSheet_() {
       "Kommentar",
       "Typ",
       "Rolle",
+      "Kinderbetreuung",
+      "Kinder (Alter)",
     ]);
     sheet.setFrozenRows(1);
   }
   return sheet;
+}
+
+function ensureChildcareColumns_(sheet) {
+  if (sheet.getLastColumn() < 10) {
+    sheet.getRange(1, 9, 1, 2).setValues([["Kinderbetreuung", "Kinder (Alter)"]]);
+  }
 }
 
 function getCancellationSheet_() {
@@ -79,6 +87,8 @@ function doPost(e) {
     const name = String(body.name || "").trim();
     const comment = String(body.comment || "").trim();
     const eventType = body.eventType === "construction-week" ? "construction-week" : "weekend";
+    const childcare = eventType === "construction-week" && body.childcare === "Ja" ? "Ja" : "Nein";
+    const childrenAges = eventType === "construction-week" && childcare === "Ja" ? String(body.childrenAges || "").trim() : "";
     const validSignup =
       eventType === "construction-week"
         ? body.weekendId === "construction-week" &&
@@ -89,7 +99,9 @@ function doPost(e) {
       !validSignup ||
       !name ||
       name.length > 80 ||
-      comment.length > 500
+      comment.length > 500 ||
+      childrenAges.length > 80 ||
+      (childcare === "Ja" && !childrenAges)
     ) {
       return json_({ error: "Ungültige Anmeldung." });
     }
@@ -106,7 +118,9 @@ function doPost(e) {
       event_type: eventType,
       role: eventType === "construction-week" ? String(body.role) : "",
     };
-    getSheet_().appendRow([
+    const sheet = getSheet_();
+    if (eventType === "construction-week") ensureChildcareColumns_(sheet);
+    sheet.appendRow([
       signup.id,
       signup.weekend_id,
       signup.day,
@@ -115,6 +129,8 @@ function doPost(e) {
       comment,
       signup.event_type,
       signup.role,
+      eventType === "construction-week" ? childcare : "",
+      eventType === "construction-week" ? childrenAges : "",
     ]);
     return json_({ signup });
   } catch (error) {

@@ -48,6 +48,8 @@ export async function POST(request: Request) {
     const signupId = String(body.signupId ?? "").trim();
     const validSignupId = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(signupId);
     const eventType = body.eventType === "construction-week" ? "construction-week" : "weekend";
+    const childcare = eventType === "construction-week" && body.childcare === "Ja" ? "Ja" : "Nein";
+    const childrenAges = eventType === "construction-week" && childcare === "Ja" ? String(body.childrenAges ?? "").trim() : "";
     const validSignup =
       eventType === "construction-week"
         ? body.weekendId === "construction-week" &&
@@ -58,7 +60,9 @@ export async function POST(request: Request) {
       !validSignup ||
       !name ||
       name.length > 80 ||
-      comment.length > 500
+      comment.length > 500 ||
+      childrenAges.length > 80 ||
+      (childcare === "Ja" && !childrenAges)
     )
       return NextResponse.json(
         { error: "Bitte fülle alle Felder korrekt aus." },
@@ -75,6 +79,8 @@ export async function POST(request: Request) {
         comment,
         eventType,
         role: eventType === "construction-week" ? body.role : "",
+        childcare,
+        childrenAges,
       }),
     });
     const data = await response.json();
