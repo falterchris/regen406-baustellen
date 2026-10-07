@@ -40,40 +40,30 @@ function WeekendPeople({ people, myIds, onCancel }: { people: Signup[]; myIds: s
 }
 
 export default function SignupPage() {
-  const [signups, setSignups] = useState<Signup[]>([]); const [name, setName] = useState(""); const [comment, setComment] = useState(""); const [weekendDay, setWeekendDay] = useState("Samstag"); const [childrenAges, setChildrenAges] = useState(""); const [target, setTarget] = useState<SignupTarget | null>(null); const [myIds, setMyIds] = useState<string[]>([]); const [status, setStatus] = useState<"idle" | "saving" | "error">("idle"); const [cancellation, setCancellation] = useState<Signup | null>(null); const [cancellationStatus, setCancellationStatus] = useState<"idle" | "saving" | "error">("idle"); const [completedTarget, setCompletedTarget] = useState<SignupTarget | null>(null); const [completionStatus, setCompletionStatus] = useState<"idle" | "saved" | "error">("idle"); const [now, setNow] = useState<Date | null>(null); const [openConstructionDay, setOpenConstructionDay] = useState<string | null>(null); const [openWeekendId, setOpenWeekendId] = useState<string | null>(null);
+  const [signups, setSignups] = useState<Signup[]>([]); const [name, setName] = useState(""); const [comment, setComment] = useState(""); const [weekendDay, setWeekendDay] = useState("Samstag"); const [childrenAges, setChildrenAges] = useState(""); const [target, setTarget] = useState<SignupTarget | null>(null); const [myIds, setMyIds] = useState<string[]>([]); const [cancellationTokens, setCancellationTokens] = useState<Record<string, string>>({}); const [status, setStatus] = useState<"idle" | "saving" | "error">("idle"); const [cancellation, setCancellation] = useState<Signup | null>(null); const [cancellationStatus, setCancellationStatus] = useState<"idle" | "saving" | "error">("idle"); const [completedTarget, setCompletedTarget] = useState<SignupTarget | null>(null); const [now, setNow] = useState<Date | null>(null); const [openConstructionDay, setOpenConstructionDay] = useState<string | null>(null); const [openWeekendId, setOpenWeekendId] = useState<string | null>(null);
   useEffect(() => {
     const saved = window.localStorage.getItem("regen406-my-signups");
     if (saved) {
       try { setMyIds(JSON.parse(saved)); } catch { window.localStorage.removeItem("regen406-my-signups"); }
     }
+    const savedTokens = window.localStorage.getItem("regen406-cancel-tokens");
+    if (savedTokens) {
+      try { setCancellationTokens(JSON.parse(savedTokens)); } catch { window.localStorage.removeItem("regen406-cancel-tokens"); }
+    }
 
     let cancelled = false;
-    let retryTimer: ReturnType<typeof setTimeout> | undefined;
-    const loadSignups = async (attempt = 0) => {
+    const loadSignups = async () => {
       try {
         const response = await fetch("/api/signups", { cache: "no-store" });
         if (!response.ok) throw new Error();
         const data = await response.json();
-        if (!cancelled) {
-          const serverSignups: Signup[] = Array.isArray(data.signups) ? data.signups : [];
-          setSignups((current) => {
-            const pending = current.filter((signup) => signup.pending);
-            const pendingNotOnServer = pending.filter(
-              (pendingSignup) => !serverSignups.some((signup) => signup.id === pendingSignup.id),
-            );
-            return [...serverSignups, ...pendingNotOnServer];
-          });
-        }
+        if (!cancelled) setSignups(Array.isArray(data.signups) ? data.signups : []);
       } catch {
-        // Die Website bleibt immer benutzbar. Falls Google gerade langsam ist,
-        // versuchen wir das Nachladen still im Hintergrund noch einmal.
-        if (!cancelled && attempt < 2) {
-          retryTimer = setTimeout(() => loadSignups(attempt + 1), attempt === 0 ? 3000 : 8000);
-        }
+        // Die Seite bleibt auch bei einem kurzen Datenbankproblem benutzbar.
       }
     };
     loadSignups();
-    return () => { cancelled = true; if (retryTimer) clearTimeout(retryTimer); };
+    return () => { cancelled = true; };
   }, []);
   useEffect(() => { const previewDate = new URLSearchParams(window.location.search).get("previewDate"); const parsedPreview = previewDate && /^\d{4}-\d{2}-\d{2}$/.test(previewDate) ? new Date(`${previewDate}T12:00:00+02:00`) : null; setNow(parsedPreview && !Number.isNaN(parsedPreview.getTime()) ? parsedPreview : new Date()); }, []);
   useEffect(() => { if (!now) return; setOpenConstructionDay(constructionDays.find((day) => new Date(day.endsAt) > now)?.date ?? null); setOpenWeekendId(weekends.find((weekend) => new Date(weekend.endsAt) > now)?.id ?? null); }, [now]);
@@ -91,37 +81,17 @@ export default function SignupPage() {
       setStatus("error");
       return;
     }
-    const day = submittedTarget.eventType === "weekend" ? weekendDay : submittedTarget.slot;
-    const optimisticId = typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : `optimistic-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    const optimisticSignup: Signup = {
-      id: optimisticId,
-      weekend_id: submittedTarget.eventId,
-      day,
-      name: submittedName,
-      created_at: new Date().toISOString(),
-      event_type: submittedTarget.eventType,
-      role: submittedTarget.eventType === "construction-week" ? submittedTarget.role ?? "" : "",
-      children_ages: submittedChildrenAges,
-      pending: true,
-    };
 
-    // Sofortige Rückmeldung: Der Eintrag erscheint direkt in der Liste,
-    // während Google Sheets im Hintergrund speichert.
-    setStatus("idle");
-    setCompletionStatus("saved");
-    setSignups((current) => [...current, optimisticSignup]);
-    setCompletedTarget(submittedTarget);
-    setTarget(null);
+    const day = submittedTarget.eventType === "weekend" ? weekendDay : submittedTarget.slot;
+    const signupId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : "";
+    setStatus("saving");
 
     try {
       const response = await fetch("/api/signups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        keepalive: true,
         body: JSON.stringify({
-          signupId: optimisticId,
+          signupId,
           weekendId: submittedTarget.eventId,
           day,
           name: submittedName,
@@ -134,45 +104,59 @@ export default function SignupPage() {
       const data = await response.json();
       if (!response.ok || !data.signup) throw new Error(data.error);
 
-      setSignups((current) => {
-        const savedSignup = { ...data.signup, pending: false };
-        return current.some((signup) => signup.id === optimisticId)
-          ? current.map((signup) => signup.id === optimisticId ? savedSignup : signup)
-          : [...current, savedSignup];
-      });
+      setSignups((current) => [...current.filter((signup) => signup.id !== data.signup.id), data.signup]);
       setMyIds((current) => {
-        const updated = [...current.filter((id) => id !== optimisticId), data.signup.id];
+        const updated = [...current.filter((id) => id !== data.signup.id), data.signup.id];
         window.localStorage.setItem("regen406-my-signups", JSON.stringify(updated));
         return updated;
       });
-      // Eingaben bleiben erhalten, damit dieselbe Person sich schnell für weitere
-      // Schichten eintragen kann. Das verhindert außerdem, dass ein später
-      // Google-Response ein inzwischen neu geöffnetes Formular leer räumt.
+
+      if (data.cancellationToken) {
+        setCancellationTokens((current) => {
+          const updated = { ...current, [data.signup.id]: data.cancellationToken };
+          window.localStorage.setItem("regen406-cancel-tokens", JSON.stringify(updated));
+          return updated;
+        });
+      }
+
       setStatus("idle");
-    } catch {
-      setSignups((current) => current.filter((signup) => signup.id !== optimisticId));
-      setStatus("idle");
-      setTarget(null);
-      setName(submittedName);
-      setComment(submittedComment);
-      setChildrenAges(submittedChildrenAges);
-      if (submittedTarget.eventType === "weekend") setWeekendDay(day);
       setCompletedTarget(submittedTarget);
-      setCompletionStatus("error");
+      setTarget(null);
+    } catch {
+      setStatus("error");
     }
   }
-  function retrySignup() {
-    if (!completedTarget) return;
-    setTarget(completedTarget);
-    setCompletedTarget(null);
-    setCompletionStatus("idle");
-    setStatus("idle");
+
+  function closeCompletedSignup() { setCompletedTarget(null); }
+
+  async function requestCancellation() {
+    if (!cancellation) return;
+    setCancellationStatus("saving");
+    try {
+      const response = await fetch("/api/cancellations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signupId: cancellation.id, cancellationToken: cancellationTokens[cancellation.id] }),
+      });
+      if (!response.ok) throw new Error();
+      setSignups((current) => current.filter((signup) => signup.id !== cancellation.id));
+      setMyIds((current) => {
+        const updated = current.filter((id) => id !== cancellation.id);
+        window.localStorage.setItem("regen406-my-signups", JSON.stringify(updated));
+        return updated;
+      });
+      setCancellationTokens((current) => {
+        const updated = { ...current };
+        delete updated[cancellation.id];
+        window.localStorage.setItem("regen406-cancel-tokens", JSON.stringify(updated));
+        return updated;
+      });
+      setCancellationStatus("idle");
+      setCancellation(null);
+    } catch {
+      setCancellationStatus("error");
+    }
   }
-  function closeCompletedSignup() {
-    setCompletedTarget(null);
-    setCompletionStatus("idle");
-  }
-  async function requestCancellation() { if (!cancellation) return; setCancellationStatus("saving"); try { const response = await fetch("/api/cancellations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ signupId: cancellation.id }) }); if (!response.ok) throw new Error(); setSignups((current) => current.filter((signup) => signup.id !== cancellation.id)); const updatedIds = myIds.filter((id) => id !== cancellation.id); setMyIds(updatedIds); window.localStorage.setItem("regen406-my-signups", JSON.stringify(updatedIds)); setCancellationStatus("idle"); setCancellation(null); } catch { setCancellationStatus("error"); } }
   const effectiveNow = now ?? new Date("2026-01-01T12:00:00+01:00");
   const constructionWeekVisible = effectiveNow < new Date(CONSTRUCTION_WEEK_END);
   function weekendState(weekend: Weekend) { const end = new Date(weekend.endsAt); if (effectiveNow < end) return "open"; return effectiveNow.getTime() < end.getTime() + THANK_YOU_DAYS * 86400000 ? "thanks" : "hidden"; }
@@ -184,7 +168,7 @@ export default function SignupPage() {
     {constructionWeekVisible && <section className="construction-week" id="baustellenwoche"><div className="construction-week-copy"><div><p className="eyebrow">09.–18. OKTOBER 2026</p><h2>REGEN406<br />Baustellen-Woche</h2></div><div className="construction-week-intro"><p>Wir wollen gemeinsam die Sandarbeiten im Dachboden stemmen. Wenn jeden Tag genug mitmachen, können wir die Arbeiten selbst schaffen und unserem Projekt rund 20.000 € sparen.</p><p>Für Essen, Getränke und einen gemeinsamen Ausklang am Lagerfeuer ist gesorgt. Während der Baustellen-Woche bieten wir auch Kinderbetreuung an. Wenn ihr mit Kindern kommt, tragt bitte ihr Alter ein – so können wir Betreuung und Vorbereitung besser planen. Also: Freund:innen schnappen, Schicht aussuchen und mitbauen!</p><p>Wähle einen Tag, eine Zeit und deine Rolle. Du kannst dich für beliebig viele Schichten eintragen.</p></div></div><div className="shift-plan">{constructionDays.filter((day) => new Date(day.endsAt) > effectiveNow).map((day) => { const [dateNumber, month] = day.date.split(" "); const isOpen = openConstructionDay === day.date; const helperCount = day.shifts.flatMap((shift) => signups.filter((signup) => signup.event_type === "construction-week" && signup.day === shift.id && signup.role === "Helfer:in")).length; return <section className={`construction-day ${isOpen ? "is-open" : "is-collapsed"}`} key={day.date}><button type="button" className="mobile-card-toggle" onClick={() => setOpenConstructionDay(isOpen ? null : day.date)} aria-expanded={isOpen}><header><span>{dateNumber}</span><strong>{month}</strong><small>{day.weekday} · {helperCount} {helperCount === 1 ? "helfende Person" : "helfende Menschen"}</small></header></button><div className="construction-shifts">{day.date === "18. Oktober" && <p className="construction-cafe">Baustellencafé · 15–17 Uhr</p>}{day.shifts.map((shift) => <div className="construction-shift" key={shift.id}><h5>{shift.time}</h5><div className="role-grid">{roles.map((role) => { const people = signups.filter((signup) => signup.event_type === "construction-week" && signup.day === shift.id && signup.role === role); return <article className="role-card" key={role}><p className="role-name">{role}</p>{role === "Helfer:in" && <p className="help-counter">{people.length} {people.length === 1 ? "helfende Person" : "helfende Menschen"}</p>}<SignupNames people={people} myIds={myIds} onCancel={setCancellation} childrenOnly={role === "Kinder"} /><button type="button" onClick={() => openSignup({ eventType: "construction-week", eventId: "construction-week", slot: shift.id, title: `${day.weekday}, ${day.date} · ${shift.time}`, role })}>{role === "Kinder" ? "Kinder eintragen" : "Eintragen"}</button></article>; })}</div></div>)}</div></section>; })}</div></section>}
     <section className="weekends" id="termine"><div className="section-heading"><h2>REGEN406<br />Baustellen-<br />Wochenenden</h2><p>An unseren Baustellen-Wochenenden bringen wir REGEN406 gemeinsam voran. Das Baustellencafé öffnet jeweils am angegebenen Tag von <strong>15–17 Uhr</strong> – für alle, die neugierig sind, die Baustelle anschauen und uns bei Getränken und Snacks kennenlernen wollen.</p></div>{weekendCards(2026).length > 0 && <><h3>2026</h3><div className="cards">{weekendCards(2026)}</div></>}{weekendCards(2027).length > 0 && <><h3 className="year-heading">2027</h3><div className="cards">{weekendCards(2027)}</div></>}</section>
     {target && <div className="modal-backdrop" role="presentation" onMouseDown={() => setTarget(null)}><section className="signup-modal" role="dialog" aria-modal="true" aria-labelledby="signup-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setTarget(null)}>×</button><p className="eyebrow">{target.title}</p><h2 id="signup-title">Super, dass du dabei bist!</h2><p>{target.eventType === "construction-week" ? target.role === "Kinder" ? <>Trag hier bitte nur das <strong>Alter der Kinder</strong> ein. So können wir die Kinderbetreuung passend vorbereiten.</> : <>Du hilfst als <strong>{target.role}</strong>.</> : "Trag deinen Namen ein – wir freuen uns auf dich."}</p><form onSubmit={submit}>{target.eventType === "construction-week" && target.role === "Kinder" ? <label>Alter der Kinder<input required value={childrenAges} onChange={(event) => setChildrenAges(event.target.value)} maxLength={80} inputMode="text" placeholder="z. B. 3, 6" /><span className="field-help">Bitte nur das Alter eintragen, keine Namen.</span></label> : <><label>Name<input required value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" /></label><label>Kommentar <span className="optional">(optional)</span><textarea value={comment} onChange={(event) => setComment(event.target.value)} maxLength={500} rows={3} placeholder="Zum Beispiel: Ich komme etwas später." /></label></>}{target.eventType === "weekend" && <fieldset><legend>Wann kannst du helfen?</legend><div className="day-buttons">{["Samstag", "Sonntag"].map((option) => <button key={option} type="button" className={weekendDay === option ? "selected" : ""} onClick={() => setWeekendDay(option)}>{option}</button>)}</div></fieldset>}{status === "error" && <p className="error">Das hat leider nicht geklappt. Bitte versuch es gleich noch einmal.</p>}<button className="submit" type="submit" disabled={status === "saving"}>{status === "saving" ? "Wird eingetragen …" : target.eventType === "construction-week" && target.role === "Kinder" ? "Kinder verbindlich eintragen" : "Verbindlich eintragen"}</button></form></section></div>}
-    {completedTarget && <div className="modal-backdrop" role="presentation" onMouseDown={closeCompletedSignup}><section className="signup-modal success-modal" role="dialog" aria-modal="true" aria-labelledby="success-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={closeCompletedSignup}>×</button><p className="eyebrow">{completionStatus === "error" ? "SPEICHERN FEHLGESCHLAGEN" : "ANMELDUNG ERFASST"}</p><h2 id="success-title">{completionStatus === "error" ? "Das hat leider nicht geklappt." : "Super, du bist dabei!"}</h2>{completionStatus === "error" ? <><p>Dein vorläufiger Eintrag wurde wieder entfernt. Deine Angaben sind noch da – du kannst es direkt noch einmal versuchen.</p><button className="submit" type="button" onClick={retrySignup}>Noch einmal versuchen</button></> : <><p>Du bist für <strong>{completedTarget.title}</strong> eingetragen. Die Speicherung läuft im Hintergrund.</p><a className="signal-cta" href={SIGNAL_URL} target="_blank" rel="noreferrer">Signal-Gruppe beitreten <span>↗</span></a><p className="signal-note">Dort teilen wir aktuelle Infos zu Bau-Wochenenden und der Baustellen-Woche.</p></>}</section></div>}
+    {completedTarget && <div className="modal-backdrop" role="presentation" onMouseDown={closeCompletedSignup}><section className="signup-modal success-modal" role="dialog" aria-modal="true" aria-labelledby="success-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={closeCompletedSignup}>×</button><p className="eyebrow">ANMELDUNG GESPEICHERT</p><h2 id="success-title">Super, du bist dabei!</h2><p>Du bist für <strong>{completedTarget.title}</strong> eingetragen.</p><a className="signal-cta" href={SIGNAL_URL} target="_blank" rel="noreferrer">Signal-Gruppe beitreten <span>↗</span></a><p className="signal-note">Dort teilen wir aktuelle Infos zu Bau-Wochenenden und der Baustellen-Woche.</p></section></div>}
     {cancellation && <div className="modal-backdrop" role="presentation" onMouseDown={() => setCancellation(null)}><section className="signup-modal cancellation-modal" role="dialog" aria-modal="true" aria-labelledby="cancellation-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setCancellation(null)}>×</button><p className="eyebrow">ABMELDUNG</p><h2 id="cancellation-title">Willst du dich wirklich abmelden?</h2><p>{cancellation.role === "Kinder" ? <>Der Eintrag für <strong>Alter: {cancellation.children_ages || cancellation.name}</strong> wird sofort aus der Liste entfernt.</> : <>Dein Eintrag für <strong>{cancellation.name}</strong> wird sofort aus der Liste entfernt.</>}</p>{cancellationStatus === "error" && <p className="error">Das hat leider nicht geklappt. Bitte versuch es gleich noch einmal.</p>}<button className="submit" type="button" onClick={requestCancellation} disabled={cancellationStatus === "saving"}>{cancellationStatus === "saving" ? "Wird ausgetragen …" : "Ja, jetzt austragen"}</button></section></div>}
     <footer><Image src="/regen406-logo.png" width={64} height={80} alt="REGEN406" /><div><p>Regensburger Straße 406 · 90480 Nürnberg</p><a href="mailto:hallo@regen406.de">hallo@regen406.de</a><a href="https://www.regen406.de/impressum">Impressum</a><a href="https://www.regen406.de/datenschutz">Datenschutz</a></div></footer>
   </main>;

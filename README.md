@@ -1,92 +1,102 @@
 # REGEN406 Baustellen-Anmeldung
-## Update v26
+## v30 – Supabase statt Google Sheets
 
-- Sonntag, 18.10.2026: Die Vormittagsschicht 10–15 Uhr bleibt bestehen.
-- Nur die letzte Schicht 15–19 Uhr entfällt und kann nicht mehr gebucht werden.
-- Das Baustellencafé 15–17 Uhr bleibt bestehen.
+Die Baustellen-Anmeldung verwendet ab v30 **Supabase/Postgres** als Datenbank. Google Sheets und Google Apps Script sind vollständig aus dem Laufzeitpfad entfernt.
 
+### Was bleibt gleich
 
-Landingpage mit öffentlicher Helfer:innenliste, Anmeldung und direkter Abmeldung für die REGEN406 Baustellen-Aktionen.
+- Baustellen-Woche 09.–18.10.2026
+- Sonntag 18.10.: nur 10–15 Uhr; 15–19 Uhr entfällt
+- Baustellencafé am 18.10. von 15–17 Uhr
+- Rollen: Verpflegung, Lead, Helfer:in, Kinderbetreuung, Kinder
+- Bei `Kinder` werden ausschließlich Altersangaben gespeichert
+- Baustellen-Wochenenden November 2026 bis März 2027
+- Eigene Einträge werden im Browser erkannt und können abgemeldet werden
+- bestehendes Design, Mobile-Akkordeons, Vorschau-Datum und Archivierungslogik
 
 ## Technik
 
 - Next.js / Vercel
-- Google Sheets + Google Apps Script
-- `GOOGLE_APPS_SCRIPT_URL` als Vercel Environment Variable
+- Supabase Postgres
+- Serverzugriff über `SUPABASE_SECRET_KEY`; der Secret Key wird **nie** an den Browser ausgeliefert
+- Die öffentliche Website spricht nur mit den eigenen Next.js-API-Routen
+- Supabase RLS bleibt aktiviert; `anon` und `authenticated` haben keinen direkten Zugriff auf `signups`
 
-## Performance
+Die Vercel-Supabase-Integration legt u. a. `SUPABASE_URL` und `SUPABASE_SECRET_KEY` automatisch an.
 
-Die öffentliche Helfer:innenliste wird serverseitig geladen und bereits mit der Seite ausgeliefert. Der Abruf von Google Apps Script / Google Sheets wird auf Vercel für 30 Sekunden gecacht. Dadurch müssen Besucher:innen beim normalen Seitenaufruf nicht mehr auf einen zusätzlichen Browser-Request zu Google warten.
+## Einmalig: Datenbank + bestehende Anmeldungen
 
-Nach einer erfolgreichen Anmeldung oder Abmeldung wird der Cache sofort invalidiert.
+Im Supabase Dashboard **SQL Editor → New query** zuerst den kompletten Inhalt von:
 
-### Schnelleres Eintragen (v24)
+`supabase/schema.sql`
 
-Beim Absenden erscheint die Person jetzt **sofort** als vorläufiger Eintrag in der gewählten Schicht bzw. am Wochenende. Die Speicherung in Google Sheets läuft parallel im Hintergrund. Nach erfolgreicher Speicherung wird derselbe Eintrag bestätigt und die permanente ID im Browser gespeichert. Falls Google Sheets nicht erreichbar ist, wird der vorläufige Eintrag automatisch wieder entfernt und es erscheint eine Schaltfläche zum erneuten Versuch.
+ausführen. Das Skript ergänzt die v30-Spalte `legacy_import`, aktiviert RLS und sperrt direkten öffentlichen Tabellenzugriff.
 
-Das Google Apps Script wurde ebenfalls entschlackt: Die Tabellenkopf-Prüfungen laufen nicht mehr bei jeder einzelnen Anmeldung. Außerdem übernimmt das Script die bereits im Browser erzeugte UUID, sodass der optimistische Eintrag und der endgültig gespeicherte Eintrag dieselbe ID haben.
+Danach die separat bereitgestellte Datei **`regen406-supabase-import-132-anmeldungen.sql`** im SQL Editor ausführen. Sie importiert die 132 vorhandenen Einträge und übernimmt die bestehenden UUIDs, damit bereits im Browser erkannte eigene Anmeldungen weiterhin erkannt werden. Der Import kann erneut ausgeführt werden, ohne Duplikate anzulegen.
 
-**Für v24 muss `google-apps-script/Code.gs` im bestehenden Apps Script ersetzt und als neue Version bereitgestellt werden.** Die bestehende `/exec`-URL bleibt gleich.
+**Wichtig:** Die Import-Datei enthält Namen und Kommentare und gehört deshalb **nicht ins GitHub-Repository**.
 
-## Favicon
+Hinweis: Im Import befinden sich noch drei historische Einträge für `sun-18-evening` (18.10., 15–19 Uhr). Die Schicht ist auf der öffentlichen Website weiterhin entfernt; die Einträge bleiben nur zur Nachvollziehbarkeit in Datenbank/Admin erhalten.
 
-Die Seite verwendet das REGEN406-Logo als Browser-Icon (`regen406-favicon-v2.png` und `favicon.ico`). Die Versionierung `?v=2` in `app/layout.tsx` hilft dabei, alte Browser-Caches des vorherigen Favicons zu umgehen.
+## Adminbereich
 
-## Einmalig einrichten
+Admin-URL:
 
-1. Im bereitgestellten Google Sheet unter **Erweiterungen → Apps Script** den Inhalt aus `google-apps-script/Code.gs` einfügen und speichern.
-2. **Bereitstellen → Neue Bereitstellung → Web-App** wählen. Ausführen als: **Ich**. Zugriff: **Jeder**. Die angezeigte `/exec`-URL kopieren.
-3. In Vercel unter **Settings → Environment Variables** setzen:
-   - `GOOGLE_APPS_SCRIPT_URL` = URL der Web-App
-4. Repository mit Vercel verbinden. Framework: **Next.js**.
+`/admin`
 
-Das Google Sheet muss nicht öffentlich freigegeben werden.
+Dort können Anmeldungen:
 
-## Apps Script aktualisieren
+- durchsucht werden
+- nach Rolle und Schicht gefiltert werden
+- gelöscht werden
+- als CSV exportiert werden
 
-Nur wenn sich `google-apps-script/Code.gs` tatsächlich geändert hat:
+### Admin-Passwort setzen
 
-1. Google Sheet → **Erweiterungen → Apps Script**
-2. Inhalt von `Code.gs` ersetzen und speichern
-3. **Bereitstellen → Bereitstellungen verwalten**
-4. Stift-Symbol → **Neue Version**
-5. **Bereitstellen**
+In Vercel unter **Project → Environment Variables** eine neue Variable anlegen:
 
-Die bestehende `/exec`-URL bleibt gleich.
+`REGEN406_ADMIN_PASSWORD`
 
-## Baustellen-Woche 2026
+Das Passwort nur für **Production + Preview** setzen. **Kein `NEXT_PUBLIC_`-Prefix verwenden.**
 
-Die Importfunktion `importConstructionWeek2026()` ist nur für die einmalige Übernahme des alten Schichtplans gedacht. Sie erkennt eine bereits erfolgte Übernahme und legt dann keine Duplikate an.
+Nach dem Anlegen der Variable das v30-Deployment neu deployen, damit die Variable verfügbar ist.
+
+Die Admin-Sitzung wird als HttpOnly-Cookie gespeichert und läuft nach 12 Stunden ab.
 
 ## Abmelden
 
-Nach Bestätigung im Popup wird der zugehörige Eintrag direkt aus dem Tabellenblatt `Anmeldungen` gelöscht. Eigene Einträge werden über die im Browser gespeicherten Anmelde-IDs erkannt.
+Neue Anmeldungen erhalten einen zufälligen Abmelde-Token. Dieser wird nur im Browser der anmeldenden Person gespeichert und nicht in der öffentlichen Liste ausgeliefert.
+
+Die aus Google Sheets importierten Alt-Einträge behalten ihre bisherigen IDs. Für diese `legacy_import`-Einträge ist die alte ID-basierte Abmeldung weiterhin erlaubt, damit bereits vorhandene Browser-Anmeldungen nicht verloren gehen. Neue Einträge können nur noch mit ihrem privaten Token gelöscht werden.
+
+## Vercel Environment Variables
+
+Von der Supabase-Integration automatisch vorhanden:
+
+- `SUPABASE_URL`
+- `SUPABASE_SECRET_KEY`
+- weitere Postgres-/Publishable-Variablen
+
+Zusätzlich manuell setzen:
+
+- `REGEN406_ADMIN_PASSWORD`
+
+`GOOGLE_APPS_SCRIPT_URL` wird ab v30 nicht mehr verwendet und kann nach erfolgreichem Umstieg aus Vercel gelöscht werden.
+
+## Empfohlener Rollout
+
+1. `supabase/schema.sql` und danach die separate Import-SQL in Supabase ausführen.
+2. `REGEN406_ADMIN_PASSWORD` in Vercel setzen.
+3. v30 zunächst als **Preview Deployment** testen.
+4. Prüfen: Laden, Eintragen, Kinder, Kinderbetreuung, Abmelden, `/admin`.
+5. Erst danach das v30-Deployment zu Production promoten.
+6. Wenn alles läuft, `GOOGLE_APPS_SCRIPT_URL` aus Vercel entfernen; das alte Google Sheet kann als Archiv bestehen bleiben.
 
 ## Lokal starten
+
+Für lokales Testen müssen die Supabase-Variablen aus Vercel in `.env.local` verfügbar sein.
 
 ```bash
 npm install
 npm run dev
 ```
-
-
-## v27 – Kinderbetreuung in der Baustellen-Woche
-
-Bei Anmeldungen zur Baustellen-Woche kann nun angegeben werden, ob Kinderbetreuung benötigt wird. Wenn ja, wird ausschließlich das Alter der Kinder abgefragt (keine Namen). Die Angaben werden in den Spalten `Kinderbetreuung` und `Kinder (Alter)` im Blatt `Anmeldungen` gespeichert. Beim ersten neuen Bauwochen-Eintrag ergänzt das Apps Script diese Spalten automatisch, falls sie im bestehenden Sheet noch fehlen.
-
-## Update v28 – Kinderbetreuung & Kinder als eigene Bauwochen-Karten
-
-In jeder Schicht der Baustellen-Woche gibt es zusätzlich zu Verpflegung, Lead und Helfer:in zwei eigene Karten:
-- **Kinderbetreuung**: Anmeldung mit Name und optionalem Kommentar für Personen, die bei der Betreuung unterstützen.
-- **Kinder**: Hier werden ausschließlich die Alter der Kinder eingetragen (z. B. `3, 6`), keine Namen.
-
-Die Angaben werden im bestehenden Blatt `Anmeldungen` gespeichert. Die Spalten `Kinderbetreuung` und `Kinder (Alter)` werden weiterhin verwendet. Für dieses Update muss `google-apps-script/Code.gs` erneut als neue Apps-Script-Version bereitgestellt werden.
-
-## v29 – robustes Laden & schnelles Eintragen
-
-- Die Website rendert sofort und wartet beim Seitenaufbau **nicht mehr serverseitig auf Google Apps Script**.
-- Anmeldungen werden nach dem Rendern über `/api/signups` nachgeladen; wenn Google langsam ist, bleibt die Seite benutzbar und versucht das Nachladen still erneut.
-- Der Lesezugriff auf Google hat einen 5-Sekunden-Timeout, damit ein hängendes Apps Script nie wieder die komplette Seite blockiert.
-- Neue Einträge erscheinen sofort optimistisch in der Liste; das Erfolgsfenster kann sofort geschlossen werden. Google speichert im Hintergrund.
-- Falls ein Hintergrund-Speichern tatsächlich fehlschlägt, wird der vorläufige Eintrag entfernt und die Fehlermeldung wieder geöffnet.
-- Google Apps Script cached die Leseantwort zusätzlich 30 Sekunden und leert diesen Cache nach Eintragen/Abmelden.

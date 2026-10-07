@@ -1,7 +1,7 @@
 import SignupPage from "./SignupPage";
 
-// Die Seite selbst darf niemals auf Google Sheets / Apps Script warten.
-// Anmeldungen werden nach dem Rendern im Browser über /api/signups geladen.
+// Die Seite rendert sofort. Anmeldungen werden danach schnell über die
+// Next.js-API aus Supabase geladen; die Seite selbst hängt nie an der Datenbank.
 export default function Home() {
   return <SignupPage />;
 }

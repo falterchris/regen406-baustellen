@@ -1,26 +1,28 @@
-import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
-
-function endpoint() {
-  const url = process.env.GOOGLE_APPS_SCRIPT_URL;
-  if (!url) throw new Error("Google Sheets ist noch nicht eingerichtet.");
-  return url;
-}
+import { supabaseRest } from "@/lib/supabase-rest";
 
 export async function POST(request: Request) {
   try {
-    const { signupId } = await request.json();
-    if (!signupId || typeof signupId !== "string") return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
-    const response = await fetch(endpoint(), {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "delete-signup", signupId })
-    });
-    const data = await response.json();
-    if (!response.ok || !data.deleted) throw new Error(data.error);
-    revalidateTag("signups");
+    const { signupId, cancellationToken } = await request.json();
+    if (typeof signupId !== "string" || !/^[0-9a-f-]{36}$/i.test(signupId)) {
+      return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
+    }
+
+    const lookup = await supabaseRest(`signups?id=eq.${encodeURIComponent(signupId)}&select=id,cancellation_token,legacy_import&limit=1`);
+    const rows = await lookup.json();
+    const signup = Array.isArray(rows) ? rows[0] : null;
+    if (!signup) return NextResponse.json({ error: "Eintrag nicht gefunden." }, { status: 404 });
+
+    const legacyAllowed = signup.legacy_import === true;
+    const tokenAllowed = typeof cancellationToken === "string" && cancellationToken && cancellationToken === signup.cancellation_token;
+    if (!legacyAllowed && !tokenAllowed) {
+      return NextResponse.json({ error: "Abmeldung nicht autorisiert." }, { status: 403 });
+    }
+
+    await supabaseRest(`signups?id=eq.${encodeURIComponent(signupId)}`, { method: "DELETE" });
     return NextResponse.json({ deleted: true });
-  } catch {
+  } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: "Abmeldung konnte nicht gespeichert werden." }, { status: 500 });
   }
 }

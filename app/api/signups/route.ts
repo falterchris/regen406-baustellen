@@ -1,14 +1,8 @@
-import { revalidateTag } from "next/cache";
+import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
+import { supabaseRest } from "@/lib/supabase-rest";
 
-const allowedWeekends = new Set([
-  "oct-2026",
-  "nov-2026",
-  "dec-2026",
-  "jan-2027",
-  "feb-2027",
-  "mar-2027",
-]);
+const allowedWeekends = new Set(["nov-2026", "dec-2026", "jan-2027", "feb-2027", "mar-2027"]);
 const allowedDays = new Set(["Samstag", "Sonntag"]);
 const allowedConstructionSlots = new Set([
   "fri-09-evening", "sat-10-morning", "sat-10-evening", "sun-11-morning",
@@ -17,38 +11,29 @@ const allowedConstructionSlots = new Set([
   "sat-17-evening", "sun-18-morning",
 ]);
 const allowedRoles = new Set(["Verpflegung", "Lead", "Helfer:in", "Kinderbetreuung", "Kinder"]);
-const GOOGLE_READ_TIMEOUT_MS = 5000;
+const publicSelect = "id,event_id,slot,name,created_at,event_type,role,child_ages";
 
-function endpoint() {
-  const url = process.env.GOOGLE_APPS_SCRIPT_URL;
-  if (!url) throw new Error("Google Sheets ist noch nicht eingerichtet.");
-  return url;
-}
-
-async function fetchGoogleForRead() {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), GOOGLE_READ_TIMEOUT_MS);
-  try {
-    return await fetch(endpoint(), {
-      next: { revalidate: 30, tags: ["signups"] },
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(timeout);
-  }
+function publicShape(row: any) {
+  return {
+    id: row.id,
+    weekend_id: row.event_id,
+    day: row.slot,
+    name: row.name ?? "",
+    created_at: row.created_at,
+    event_type: row.event_type,
+    role: row.role ?? "",
+    children_ages: row.child_ages ?? "",
+  };
 }
 
 export async function GET() {
   try {
-    const response = await fetchGoogleForRead();
-    if (!response.ok) throw new Error("Google Sheets nicht erreichbar");
-    const data = await response.json();
-    return NextResponse.json({ signups: data.signups ?? [] });
-  } catch {
-    return NextResponse.json(
-      { signups: [], error: "Datenbank nicht verfügbar" },
-      { status: 503 },
-    );
+    const response = await supabaseRest(`signups?select=${publicSelect}&order=created_at.asc`);
+    const rows = await response.json();
+    return NextResponse.json({ signups: Array.isArray(rows) ? rows.map(publicShape) : [] });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ signups: [], error: "Datenbank nicht verfügbar" }, { status: 503 });
   }
 }
 
@@ -57,59 +42,51 @@ export async function POST(request: Request) {
     const body = await request.json();
     const rawName = String(body.name ?? "").trim();
     const rawComment = String(body.comment ?? "").trim();
-    const signupId = String(body.signupId ?? "").trim();
-    const validSignupId = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(signupId);
+    const requestedId = String(body.signupId ?? "").trim();
+    const signupId = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestedId) ? requestedId : randomUUID();
     const eventType = body.eventType === "construction-week" ? "construction-week" : "weekend";
     const isChildrenSignup = eventType === "construction-week" && body.role === "Kinder";
     const name = isChildrenSignup ? "" : rawName;
     const comment = isChildrenSignup ? "" : rawComment;
-    const childrenAges = isChildrenSignup ? String(body.childrenAges ?? "").trim() : "";
-    const validSignup =
-      eventType === "construction-week"
-        ? body.weekendId === "construction-week" &&
-          allowedConstructionSlots.has(body.day) &&
-          allowedRoles.has(body.role)
-        : allowedWeekends.has(body.weekendId) && allowedDays.has(body.day);
-    if (
-      !validSignup ||
-      (!isChildrenSignup && !name) ||
-      (isChildrenSignup && !childrenAges) ||
-      name.length > 80 ||
-      comment.length > 500 ||
-      childrenAges.length > 80
-    )
-      return NextResponse.json(
-        { error: "Bitte fülle alle Felder korrekt aus." },
-        { status: 400 },
-      );
+    const childAges = isChildrenSignup ? String(body.childrenAges ?? "").trim() : "";
+    const eventId = String(body.weekendId ?? "").trim();
+    const slot = String(body.day ?? "").trim();
+    const role = eventType === "construction-week" ? String(body.role ?? "").trim() : "";
 
-    // Schreibvorgänge bekommen bewusst keinen kurzen Timeout: Das Frontend zeigt
-    // den Eintrag bereits sofort an, während Google zuverlässig im Hintergrund speichert.
-    const response = await fetch(endpoint(), {
+    const validSignup = eventType === "construction-week"
+      ? eventId === "construction-week" && allowedConstructionSlots.has(slot) && allowedRoles.has(role)
+      : allowedWeekends.has(eventId) && allowedDays.has(slot);
+
+    if (!validSignup || (!isChildrenSignup && !name) || (isChildrenSignup && !childAges) || name.length > 80 || comment.length > 500 || childAges.length > 80) {
+      return NextResponse.json({ error: "Bitte fülle alle Felder korrekt aus." }, { status: 400 });
+    }
+
+    const cancellationToken = randomUUID();
+    const payload = {
+      id: signupId,
+      event_type: eventType,
+      event_id: eventId,
+      slot,
+      role: role || null,
+      name,
+      comment,
+      child_ages: childAges || null,
+      cancellation_token: cancellationToken,
+      legacy_import: false,
+    };
+
+    const response = await supabaseRest(`signups?select=${publicSelect}`, {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({
-        signupId: validSignupId ? signupId : undefined,
-        weekendId: body.weekendId,
-        day: body.day,
-        name,
-        comment,
-        eventType,
-        role: eventType === "construction-week" ? body.role : "",
-        childrenAges,
-      }),
+      prefer: "return=representation",
+      body: JSON.stringify(payload),
     });
-    const data = await response.json();
-    if (!response.ok || !data.signup)
-      throw new Error(
-        data.error ?? "Google Sheets konnte die Anmeldung nicht speichern.",
-      );
-    revalidateTag("signups");
-    return NextResponse.json({ signup: data.signup }, { status: 201 });
-  } catch {
-    return NextResponse.json(
-      { error: "Eintragung konnte nicht gespeichert werden." },
-      { status: 500 },
-    );
+    const rows = await response.json();
+    const row = Array.isArray(rows) ? rows[0] : null;
+    if (!row) throw new Error("Supabase hat keinen Eintrag zurückgegeben.");
+
+    return NextResponse.json({ signup: publicShape(row), cancellationToken }, { status: 201 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Eintragung konnte nicht gespeichert werden." }, { status: 500 });
   }
 }
