@@ -48,6 +48,12 @@ function getCancellationSheet_() {
 }
 
 function doGet() {
+  const cache = CacheService.getScriptCache();
+  const cached = cache.get("signups-v29");
+  if (cached) {
+    return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
+  }
+
   const rows = getSheet_().getDataRange().getValues();
   const signups = rows
     .slice(1)
@@ -62,7 +68,9 @@ function doGet() {
       role: String(row[7] || ""),
       children_ages: String(row[9] || ""),
     }));
-  return json_({ signups });
+  const payload = JSON.stringify({ signups });
+  cache.put("signups-v29", payload, 30);
+  return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
@@ -122,7 +130,7 @@ function doPost(e) {
     };
     const sheet = getSheet_();
     if (eventType === "construction-week") ensureChildcareColumns_(sheet);
-    sheet.appendRow([
+    const row = [[
       signup.id,
       signup.weekend_id,
       signup.day,
@@ -133,7 +141,9 @@ function doPost(e) {
       signup.role,
       eventType === "construction-week" && signup.role === "Kinderbetreuung" ? "Ja" : "",
       eventType === "construction-week" && signup.role === "Kinder" ? childrenAges : "",
-    ]);
+    ]];
+    sheet.getRange(sheet.getLastRow() + 1, 1, 1, row[0].length).setValues(row);
+    CacheService.getScriptCache().remove("signups-v29");
     return json_({ signup });
   } catch (error) {
     return json_({ error: "Eintragung konnte nicht gespeichert werden." });
@@ -146,6 +156,7 @@ function deleteSignup_(signupId) {
   const rowIndex = values.findIndex((row, index) => index > 0 && String(row[0]) === signupId);
   if (rowIndex === -1) return json_({ error: "Anmeldung nicht gefunden." });
   sheet.deleteRow(rowIndex + 1);
+  CacheService.getScriptCache().remove("signups-v29");
   return json_({ deleted: true });
 }
 

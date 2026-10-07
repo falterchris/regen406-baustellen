@@ -81,3 +81,12 @@ In jeder Schicht der Baustellen-Woche gibt es zusätzlich zu Verpflegung, Lead u
 - **Kinder**: Hier werden ausschließlich die Alter der Kinder eingetragen (z. B. `3, 6`), keine Namen.
 
 Die Angaben werden im bestehenden Blatt `Anmeldungen` gespeichert. Die Spalten `Kinderbetreuung` und `Kinder (Alter)` werden weiterhin verwendet. Für dieses Update muss `google-apps-script/Code.gs` erneut als neue Apps-Script-Version bereitgestellt werden.
+
+## v29 – robustes Laden & schnelles Eintragen
+
+- Die Website rendert sofort und wartet beim Seitenaufbau **nicht mehr serverseitig auf Google Apps Script**.
+- Anmeldungen werden nach dem Rendern über `/api/signups` nachgeladen; wenn Google langsam ist, bleibt die Seite benutzbar und versucht das Nachladen still erneut.
+- Der Lesezugriff auf Google hat einen 5-Sekunden-Timeout, damit ein hängendes Apps Script nie wieder die komplette Seite blockiert.
+- Neue Einträge erscheinen sofort optimistisch in der Liste; das Erfolgsfenster kann sofort geschlossen werden. Google speichert im Hintergrund.
+- Falls ein Hintergrund-Speichern tatsächlich fehlschlägt, wird der vorläufige Eintrag entfernt und die Fehlermeldung wieder geöffnet.
+- Google Apps Script cached die Leseantwort zusätzlich 30 Sekunden und leert diesen Cache nach Eintragen/Abmelden.

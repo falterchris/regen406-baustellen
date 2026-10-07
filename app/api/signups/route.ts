@@ -17,6 +17,7 @@ const allowedConstructionSlots = new Set([
   "sat-17-evening", "sun-18-morning",
 ]);
 const allowedRoles = new Set(["Verpflegung", "Lead", "Helfer:in", "Kinderbetreuung", "Kinder"]);
+const GOOGLE_READ_TIMEOUT_MS = 5000;
 
 function endpoint() {
   const url = process.env.GOOGLE_APPS_SCRIPT_URL;
@@ -24,11 +25,22 @@ function endpoint() {
   return url;
 }
 
+async function fetchGoogleForRead() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), GOOGLE_READ_TIMEOUT_MS);
+  try {
+    return await fetch(endpoint(), {
+      next: { revalidate: 30, tags: ["signups"] },
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function GET() {
   try {
-    const response = await fetch(endpoint(), {
-      next: { revalidate: 30, tags: ["signups"] },
-    });
+    const response = await fetchGoogleForRead();
     if (!response.ok) throw new Error("Google Sheets nicht erreichbar");
     const data = await response.json();
     return NextResponse.json({ signups: data.signups ?? [] });
@@ -70,6 +82,9 @@ export async function POST(request: Request) {
         { error: "Bitte fülle alle Felder korrekt aus." },
         { status: 400 },
       );
+
+    // Schreibvorgänge bekommen bewusst keinen kurzen Timeout: Das Frontend zeigt
+    // den Eintrag bereits sofort an, während Google zuverlässig im Hintergrund speichert.
     const response = await fetch(endpoint(), {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
