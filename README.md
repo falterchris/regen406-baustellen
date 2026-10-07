@@ -107,3 +107,9 @@ npm run dev
 - Admin can approve (delete signup) or reject cancellation requests.
 - Better cancellation button contrast: white in construction-week pink tags, black in weekend green tags.
 - Run `supabase/v31-cancellation-requests.sql` once in Supabase SQL Editor before deploying v31.
+
+## v32 – Abmelden UX
+- Abmelde-Aktion steht direkt neben Eintragen und nutzt das gleiche Button-Design.
+- Pro Bereich wird nur eine Abmelde-Aktion gezeigt: erkannter eigener Eintrag = `Abmelden`, sonst = `Abmeldung anfragen`.
+- Inline-Abmelden-Links an den Namen wurden entfernt.
+- Bei mehreren eigenen Einträgen im selben Bereich kann der gewünschte Eintrag vor der direkten Abmeldung ausgewählt werden.
