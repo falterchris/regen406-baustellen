@@ -113,3 +113,13 @@ npm run dev
 - Pro Bereich wird nur eine Abmelde-Aktion gezeigt: erkannter eigener Eintrag = `Abmelden`, sonst = `Abmeldung anfragen`.
 - Inline-Abmelden-Links an den Namen wurden entfernt.
 - Bei mehreren eigenen Einträgen im selben Bereich kann der gewünschte Eintrag vor der direkten Abmeldung ausgewählt werden.
+
+
+## v33 – Namen & vergangene Bauwochen-Tage
+
+- Neue persoenliche Anmeldungen fragen Vorname und Nachname getrennt als Pflichtfelder ab.
+- In Supabase/Admin wird der volle Name gespeichert; auf der oeffentlichen Seite wird nur der Vorname ausgegeben.
+- Kinder-Eintraege bleiben reine Altersangaben.
+- Vergangene Tage der Baustellen-Woche bleiben waehrend der Bauwoche plus drei Tage als kompakte, ausgegraute Archivzeile sichtbar.
+- Drei Tage nach Ende der Baustellen-Woche verschwindet der komplette Bauwochen-Bereich.
+- Keine Supabase-Migration erforderlich; die bestehende Spalte `name` speichert weiterhin den vollstaendigen Namen.

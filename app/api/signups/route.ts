@@ -13,12 +13,16 @@ const allowedConstructionSlots = new Set([
 const allowedRoles = new Set(["Verpflegung", "Lead", "Helfer:in", "Kinderbetreuung", "Kinder"]);
 const publicSelect = "id,event_id,slot,name,created_at,event_type,role,child_ages";
 
+function firstNameOnly(fullName: string) {
+  return fullName.trim().split(/\s+/)[0] ?? "";
+}
+
 function publicShape(row: any) {
   return {
     id: row.id,
     weekend_id: row.event_id,
     day: row.slot,
-    name: row.name ?? "",
+    name: firstNameOnly(row.name ?? ""),
     created_at: row.created_at,
     event_type: row.event_type,
     role: row.role ?? "",
@@ -40,13 +44,16 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const rawName = String(body.name ?? "").trim();
+    const rawFirstName = String(body.firstName ?? "").trim();
+    const rawLastName = String(body.lastName ?? "").trim();
     const rawComment = String(body.comment ?? "").trim();
     const requestedId = String(body.signupId ?? "").trim();
     const signupId = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestedId) ? requestedId : randomUUID();
     const eventType = body.eventType === "construction-week" ? "construction-week" : "weekend";
     const isChildrenSignup = eventType === "construction-week" && body.role === "Kinder";
-    const name = isChildrenSignup ? "" : rawName;
+    const firstName = isChildrenSignup ? "" : rawFirstName;
+    const lastName = isChildrenSignup ? "" : rawLastName;
+    const name = isChildrenSignup ? "" : `${firstName} ${lastName}`.trim();
     const comment = isChildrenSignup ? "" : rawComment;
     const childAges = isChildrenSignup ? String(body.childrenAges ?? "").trim() : "";
     const eventId = String(body.weekendId ?? "").trim();
@@ -57,7 +64,7 @@ export async function POST(request: Request) {
       ? eventId === "construction-week" && allowedConstructionSlots.has(slot) && allowedRoles.has(role)
       : allowedWeekends.has(eventId) && allowedDays.has(slot);
 
-    if (!validSignup || (!isChildrenSignup && !name) || (isChildrenSignup && !childAges) || name.length > 80 || comment.length > 500 || childAges.length > 80) {
+    if (!validSignup || (!isChildrenSignup && (!firstName || !lastName)) || (isChildrenSignup && !childAges) || firstName.length > 50 || lastName.length > 80 || name.length > 140 || comment.length > 500 || childAges.length > 80) {
       return NextResponse.json({ error: "Bitte fülle alle Felder korrekt aus." }, { status: 400 });
     }
 
