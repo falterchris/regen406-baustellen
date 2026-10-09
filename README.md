@@ -123,3 +123,9 @@ npm run dev
 - Vergangene Tage der Baustellen-Woche bleiben waehrend der Bauwoche plus drei Tage als kompakte, ausgegraute Archivzeile sichtbar.
 - Drei Tage nach Ende der Baustellen-Woche verschwindet der komplette Bauwochen-Bereich.
 - Keine Supabase-Migration erforderlich; die bestehende Spalte `name` speichert weiterhin den vollstaendigen Namen.
+
+
+## v34 – Formular-Layout
+- Vorname und Nachname sind im Anmelde-Popup wieder exakt auf einer Hoehe ausgerichtet.
+- Der Datenschutzhinweis steht sauber unter beiden Namensfeldern.
+- Keine Datenbank- oder Supabase-Aenderung erforderlich.

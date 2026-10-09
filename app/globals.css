@@ -960,12 +960,18 @@ footer a {
 /* v33: Vor-/Nachname + schlankes Bauwochen-Archiv */
 .name-fields {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  align-items: start;
+}
+.signup-modal .name-fields > label,
+.signup-modal .name-fields > label + label {
+  display: block;
+  margin-top: 0;
 }
 .name-privacy-note {
   display: block;
-  margin: -4px 0 12px;
+  margin: 8px 0 12px;
 }
 .construction-day-past {
   display: grid;
