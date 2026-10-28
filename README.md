@@ -129,3 +129,8 @@ npm run dev
 - Vorname und Nachname sind im Anmelde-Popup wieder exakt auf einer Hoehe ausgerichtet.
 - Der Datenschutzhinweis steht sauber unter beiden Namensfeldern.
 - Keine Datenbank- oder Supabase-Aenderung erforderlich.
+
+
+## v35
+- November-Wochenende erweitert: Fr. 13.11.2026, 14–19 Uhr zusätzlich zu Samstag/Sonntag.
+- Intro-Button „Baustellen-Wochenenden“ vorerst ausgeblendet.

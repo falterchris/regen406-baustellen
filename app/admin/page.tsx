@@ -39,19 +39,24 @@ const slotLabels: Record<string, string> = {
   "sat-17-evening": "Sa. 17.10. · 15–20 Uhr",
   "sun-18-morning": "So. 18.10. · 10–15 Uhr",
   "sun-18-evening": "So. 18.10. · 15–19 Uhr (entfallen)",
+  "Freitag · 14–19 Uhr": "Fr. 13.11. · 14–19 Uhr",
   Samstag: "Samstag",
   Sonntag: "Sonntag",
 };
 
-const constructionSlots = Object.entries(slotLabels).filter(([key]) => !["Samstag", "Sonntag", "sun-18-evening"].includes(key));
+const constructionSlots = Object.entries(slotLabels).filter(([key]) => !["Freitag · 14–19 Uhr", "Samstag", "Sonntag", "sun-18-evening"].includes(key));
 const constructionRoles = ["Verpflegung", "Lead", "Helfer:in", "Kinderbetreuung", "Kinder"];
 const weekendOptions = [
-  ["nov-2026", "14.–15. November 2026"],
+  ["nov-2026", "13.–15. November 2026"],
   ["dec-2026", "12.–13. Dezember 2026"],
   ["jan-2027", "09.–10. Januar 2027"],
   ["feb-2027", "06.–07. Februar 2027"],
   ["mar-2027", "06.–07. März 2027"],
 ] as const;
+
+function weekendSlotsFor(eventId: string) {
+  return eventId === "nov-2026" ? ["Freitag · 14–19 Uhr", "Samstag", "Sonntag"] : ["Samstag", "Sonntag"];
+}
 
 function csvEscape(value: unknown) {
   const text = String(value ?? "");
@@ -187,7 +192,7 @@ export default function AdminPage() {
     <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Schicht / Tag</th><th>Rolle</th><th>Name / Kinder</th><th>Kommentar</th><th>Erstellt</th><th></th></tr></thead><tbody>{filtered.map((s) => <tr key={s.id}><td>{slotLabels[s.slot] ?? `${s.event_id} · ${s.slot}`}</td><td>{s.role || "Wochenende"}</td><td>{signupLabel(s)}</td><td>{s.comment || "–"}</td><td>{new Date(s.created_at).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}</td><td><div className="admin-row-actions"><button className="admin-edit" type="button" onClick={() => openEdit(s)}>Bearbeiten</button><button className="admin-delete" type="button" onClick={() => remove(s)}>Löschen</button></div></td></tr>)}</tbody></table></div>
 
     {editing && editDraft && <div className="modal-backdrop" role="presentation" onMouseDown={() => setEditing(null)}><section className="signup-modal admin-edit-modal" role="dialog" aria-modal="true" aria-labelledby="admin-edit-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setEditing(null)}>×</button><p className="eyebrow">EINTRAG BEARBEITEN</p><h2 id="admin-edit-title">{signupLabel(editing)}</h2><form onSubmit={saveEdit}>
-      {editDraft.event_type === "construction-week" ? <><label>Schicht<select value={editDraft.slot} onChange={(e) => setEditDraft({ ...editDraft, slot: e.target.value })}>{constructionSlots.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label><label>Rolle<select value={editDraft.role ?? "Helfer:in"} onChange={(e) => setEditDraft({ ...editDraft, role: e.target.value, name: e.target.value === "Kinder" ? "" : editDraft.name, child_ages: e.target.value === "Kinder" ? editDraft.child_ages : null })}>{constructionRoles.map((value) => <option value={value} key={value}>{value}</option>)}</select></label></> : <><label>Baustellen-Wochenende<select value={editDraft.event_id} onChange={(e) => setEditDraft({ ...editDraft, event_id: e.target.value })}>{weekendOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label><label>Tag<select value={editDraft.slot} onChange={(e) => setEditDraft({ ...editDraft, slot: e.target.value })}><option>Samstag</option><option>Sonntag</option></select></label></>}
+      {editDraft.event_type === "construction-week" ? <><label>Schicht<select value={editDraft.slot} onChange={(e) => setEditDraft({ ...editDraft, slot: e.target.value })}>{constructionSlots.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label><label>Rolle<select value={editDraft.role ?? "Helfer:in"} onChange={(e) => setEditDraft({ ...editDraft, role: e.target.value, name: e.target.value === "Kinder" ? "" : editDraft.name, child_ages: e.target.value === "Kinder" ? editDraft.child_ages : null })}>{constructionRoles.map((value) => <option value={value} key={value}>{value}</option>)}</select></label></> : <><label>Baustellen-Wochenende<select value={editDraft.event_id} onChange={(e) => { const nextEventId = e.target.value; const nextSlots = weekendSlotsFor(nextEventId); setEditDraft({ ...editDraft, event_id: nextEventId, slot: nextSlots.includes(editDraft.slot) ? editDraft.slot : "Samstag" }); }}>{weekendOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label><label>Tag / Schicht<select value={editDraft.slot} onChange={(e) => setEditDraft({ ...editDraft, slot: e.target.value })}>{weekendSlotsFor(editDraft.event_id).map((value) => <option value={value} key={value}>{value}</option>)}</select></label></>}
       {editDraft.event_type === "construction-week" && editDraft.role === "Kinder" ? <label>Alter der Kinder<input required value={editDraft.child_ages ?? ""} onChange={(e) => setEditDraft({ ...editDraft, child_ages: e.target.value })} placeholder="z. B. 3, 6" /></label> : <><label>Name<input required value={editDraft.name ?? ""} onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })} /></label><label>Kommentar <span className="optional">(optional)</span><textarea rows={3} maxLength={500} value={editDraft.comment ?? ""} onChange={(e) => setEditDraft({ ...editDraft, comment: e.target.value })} /></label></>}
       {editStatus === "error" && <p className="error">Speichern hat nicht geklappt. Bitte prüfe die Angaben.</p>}<button className="submit" type="submit" disabled={editStatus === "saving"}>{editStatus === "saving" ? "Wird gespeichert …" : "Änderungen speichern"}</button>
     </form></section></div>}

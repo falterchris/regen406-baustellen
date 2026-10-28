@@ -4,6 +4,10 @@ import { supabaseRest } from "@/lib/supabase-rest";
 
 const allowedWeekends = new Set(["nov-2026", "dec-2026", "jan-2027", "feb-2027", "mar-2027"]);
 const allowedDays = new Set(["Samstag", "Sonntag"]);
+const NOVEMBER_FRIDAY_SLOT = "Freitag · 14–19 Uhr";
+function validWeekendSlot(eventId: string, slot: string) {
+  return allowedWeekends.has(eventId) && (allowedDays.has(slot) || (eventId === "nov-2026" && slot === NOVEMBER_FRIDAY_SLOT));
+}
 const allowedConstructionSlots = new Set([
   "fri-09-evening", "sat-10-morning", "sat-10-evening", "sun-11-morning",
   "sun-11-evening", "wed-14-morning", "wed-14-evening", "thu-15-morning",
@@ -62,7 +66,7 @@ export async function POST(request: Request) {
 
     const validSignup = eventType === "construction-week"
       ? eventId === "construction-week" && allowedConstructionSlots.has(slot) && allowedRoles.has(role)
-      : allowedWeekends.has(eventId) && allowedDays.has(slot);
+      : validWeekendSlot(eventId, slot);
 
     if (!validSignup || (!isChildrenSignup && (!firstName || !lastName)) || (isChildrenSignup && !childAges) || firstName.length > 50 || lastName.length > 80 || name.length > 140 || comment.length > 500 || childAges.length > 80) {
       return NextResponse.json({ error: "Bitte fülle alle Felder korrekt aus." }, { status: 400 });
