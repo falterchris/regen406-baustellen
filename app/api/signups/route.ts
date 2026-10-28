@@ -61,10 +61,10 @@ export async function POST(request: Request) {
     const childAges = isChildrenSignup ? String(body.childrenAges ?? "").trim() : "";
     const eventId = String(body.weekendId ?? "").trim();
     const singleSlot = String(body.day ?? "").trim();
-    const requestedWeekendSlots = eventType === "weekend" && Array.isArray(body.days)
-      ? Array.from(new Set(body.days.map((value: unknown) => String(value ?? "").trim()).filter(Boolean)))
+    const requestedWeekendSlots: string[] = eventType === "weekend" && Array.isArray(body.days)
+      ? Array.from(new Set<string>(body.days.map((value: unknown) => String(value ?? "").trim()).filter((value: string) => value.length > 0)))
       : [singleSlot];
-    const slots = eventType === "weekend" ? requestedWeekendSlots : [singleSlot];
+    const slots: string[] = eventType === "weekend" ? requestedWeekendSlots : [singleSlot];
     const role = eventType === "construction-week" ? String(body.role ?? "").trim() : "";
 
     const validSignup = eventType === "construction-week"
