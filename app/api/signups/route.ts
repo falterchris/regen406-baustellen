@@ -52,7 +52,6 @@ export async function POST(request: Request) {
     const rawLastName = String(body.lastName ?? "").trim();
     const rawComment = String(body.comment ?? "").trim();
     const requestedId = String(body.signupId ?? "").trim();
-    const signupId = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestedId) ? requestedId : randomUUID();
     const eventType = body.eventType === "construction-week" ? "construction-week" : "weekend";
     const isChildrenSignup = eventType === "construction-week" && body.role === "Kinder";
     const firstName = isChildrenSignup ? "" : rawFirstName;
@@ -61,41 +60,54 @@ export async function POST(request: Request) {
     const comment = isChildrenSignup ? "" : rawComment;
     const childAges = isChildrenSignup ? String(body.childrenAges ?? "").trim() : "";
     const eventId = String(body.weekendId ?? "").trim();
-    const slot = String(body.day ?? "").trim();
+    const singleSlot = String(body.day ?? "").trim();
+    const requestedWeekendSlots = eventType === "weekend" && Array.isArray(body.days)
+      ? Array.from(new Set(body.days.map((value: unknown) => String(value ?? "").trim()).filter(Boolean)))
+      : [singleSlot];
+    const slots = eventType === "weekend" ? requestedWeekendSlots : [singleSlot];
     const role = eventType === "construction-week" ? String(body.role ?? "").trim() : "";
 
     const validSignup = eventType === "construction-week"
-      ? eventId === "construction-week" && allowedConstructionSlots.has(slot) && allowedRoles.has(role)
-      : validWeekendSlot(eventId, slot);
+      ? eventId === "construction-week" && slots.length === 1 && allowedConstructionSlots.has(slots[0]) && allowedRoles.has(role)
+      : slots.length > 0 && slots.length <= 3 && slots.every((slot) => validWeekendSlot(eventId, slot));
 
     if (!validSignup || (!isChildrenSignup && (!firstName || !lastName)) || (isChildrenSignup && !childAges) || firstName.length > 50 || lastName.length > 80 || name.length > 140 || comment.length > 500 || childAges.length > 80) {
       return NextResponse.json({ error: "Bitte fülle alle Felder korrekt aus." }, { status: 400 });
     }
 
-    const cancellationToken = randomUUID();
-    const payload = {
-      id: signupId,
-      event_type: eventType,
-      event_id: eventId,
-      slot,
-      role: role || null,
-      name,
-      comment,
-      child_ages: childAges || null,
-      cancellation_token: cancellationToken,
-      legacy_import: false,
-    };
+    const payloads = slots.map((slot, index) => {
+      const signupId = index === 0 && slots.length === 1 && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestedId) ? requestedId : randomUUID();
+      const cancellationToken = randomUUID();
+      return {
+        id: signupId,
+        event_type: eventType,
+        event_id: eventId,
+        slot,
+        role: role || null,
+        name,
+        comment,
+        child_ages: childAges || null,
+        cancellation_token: cancellationToken,
+        legacy_import: false,
+      };
+    });
 
     const response = await supabaseRest(`signups?select=${publicSelect}`, {
       method: "POST",
       prefer: "return=representation",
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payloads),
     });
     const rows = await response.json();
-    const row = Array.isArray(rows) ? rows[0] : null;
-    if (!row) throw new Error("Supabase hat keinen Eintrag zurückgegeben.");
+    if (!Array.isArray(rows) || rows.length !== payloads.length) throw new Error("Supabase hat nicht alle Einträge zurückgegeben.");
 
-    return NextResponse.json({ signup: publicShape(row), cancellationToken }, { status: 201 });
+    const tokens = Object.fromEntries(payloads.map((payload) => [payload.id, payload.cancellation_token]));
+    const publicRows = rows.map(publicShape);
+    return NextResponse.json({
+      signups: publicRows,
+      signup: publicRows.length === 1 ? publicRows[0] : undefined,
+      cancellationTokens: tokens,
+      cancellationToken: publicRows.length === 1 ? tokens[publicRows[0].id] : undefined,
+    }, { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Eintragung konnte nicht gespeichert werden." }, { status: 500 });

@@ -134,3 +134,9 @@ npm run dev
 ## v35
 - November-Wochenende erweitert: Fr. 13.11.2026, 14–19 Uhr zusätzlich zu Samstag/Sonntag.
 - Intro-Button „Baustellen-Wochenenden“ vorerst ausgeblendet.
+
+
+## v36
+- Pop-ups sind auf kleinen Displays intern scrollbar und responsiver.
+- Baustellen-Wochenenden erlauben Mehrfachauswahl pro Wochenende.
+- Samstag und Sonntag werden mit „ab 10 Uhr“ angezeigt; Freitag im November bleibt 14–19 Uhr.

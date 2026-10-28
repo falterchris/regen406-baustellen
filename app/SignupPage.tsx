@@ -15,11 +15,11 @@ type DirectCancellationTarget = { title: string; people: Signup[] };
 const SIGNAL_URL = "https://signal.group/#CjQKIOWO2ZjDX_0Ow8leQsbP_A7uBXU9P_LV26kc9CHTjjqwEhCJb1QAGKY6GVdab2MHOhg_";
 const roles = ["Verpflegung", "Lead", "Helfer:in", "Kinderbetreuung", "Kinder"] as const;
 const weekends: Weekend[] = [
-  { id: "nov-2026", year: 2026, month: "November", days: "13.–15.", dates: "13.–15. November 2026", cafe: "Sa. 14.11. · Baustellencafé", endsAt: "2026-11-15T20:00:00+01:00", signupDays: [{ value: "Freitag · 14–19 Uhr", label: "Freitag · 14–19 Uhr" }, { value: "Samstag", label: "Samstag" }, { value: "Sonntag", label: "Sonntag" }] },
-  { id: "dec-2026", year: 2026, month: "Dezember", days: "12.–13.", dates: "12.–13. Dezember 2026", cafe: "Sa. 12.12. · Baustellencafé", endsAt: "2026-12-13T20:00:00+01:00", signupDays: [{ value: "Samstag", label: "Samstag" }, { value: "Sonntag", label: "Sonntag" }] },
-  { id: "jan-2027", year: 2027, month: "Januar", days: "09.–10.", dates: "09.–10. Januar 2027", cafe: "Sa. 09.01. · Baustellencafé", endsAt: "2027-01-10T20:00:00+01:00", signupDays: [{ value: "Samstag", label: "Samstag" }, { value: "Sonntag", label: "Sonntag" }] },
-  { id: "feb-2027", year: 2027, month: "Februar", days: "06.–07.", dates: "06.–07. Februar 2027", cafe: "Sa. 06.02. · Baustellencafé", endsAt: "2027-02-07T20:00:00+01:00", signupDays: [{ value: "Samstag", label: "Samstag" }, { value: "Sonntag", label: "Sonntag" }] },
-  { id: "mar-2027", year: 2027, month: "März", days: "06.–07.", dates: "06.–07. März 2027", cafe: "Sa. 06.03. · Baustellencafé", endsAt: "2027-03-07T20:00:00+01:00", signupDays: [{ value: "Samstag", label: "Samstag" }, { value: "Sonntag", label: "Sonntag" }] },
+  { id: "nov-2026", year: 2026, month: "November", days: "13.–15.", dates: "13.–15. November 2026", cafe: "Sa. 14.11. · Baustellencafé", endsAt: "2026-11-15T20:00:00+01:00", signupDays: [{ value: "Freitag · 14–19 Uhr", label: "Freitag · 14–19 Uhr" }, { value: "Samstag", label: "Samstag · ab 10 Uhr" }, { value: "Sonntag", label: "Sonntag · ab 10 Uhr" }] },
+  { id: "dec-2026", year: 2026, month: "Dezember", days: "12.–13.", dates: "12.–13. Dezember 2026", cafe: "Sa. 12.12. · Baustellencafé", endsAt: "2026-12-13T20:00:00+01:00", signupDays: [{ value: "Samstag", label: "Samstag · ab 10 Uhr" }, { value: "Sonntag", label: "Sonntag · ab 10 Uhr" }] },
+  { id: "jan-2027", year: 2027, month: "Januar", days: "09.–10.", dates: "09.–10. Januar 2027", cafe: "Sa. 09.01. · Baustellencafé", endsAt: "2027-01-10T20:00:00+01:00", signupDays: [{ value: "Samstag", label: "Samstag · ab 10 Uhr" }, { value: "Sonntag", label: "Sonntag · ab 10 Uhr" }] },
+  { id: "feb-2027", year: 2027, month: "Februar", days: "06.–07.", dates: "06.–07. Februar 2027", cafe: "Sa. 06.02. · Baustellencafé", endsAt: "2027-02-07T20:00:00+01:00", signupDays: [{ value: "Samstag", label: "Samstag · ab 10 Uhr" }, { value: "Sonntag", label: "Sonntag · ab 10 Uhr" }] },
+  { id: "mar-2027", year: 2027, month: "März", days: "06.–07.", dates: "06.–07. März 2027", cafe: "Sa. 06.03. · Baustellencafé", endsAt: "2027-03-07T20:00:00+01:00", signupDays: [{ value: "Samstag", label: "Samstag · ab 10 Uhr" }, { value: "Sonntag", label: "Sonntag · ab 10 Uhr" }] },
 ];
 const constructionDays: ConstructionDay[] = [
   { date: "09. Oktober", weekday: "Freitag", endsAt: "2026-10-09T20:00:00+02:00", shifts: [{ id: "fri-09-evening", time: "16–20 Uhr" }] },
@@ -43,12 +43,12 @@ function WeekendPeople({ people, myIds, days }: { people: Signup[]; myIds: strin
 }
 
 function signupDaysForWeekend(eventId: string) {
-  return weekends.find((weekend) => weekend.id === eventId)?.signupDays ?? [{ value: "Samstag", label: "Samstag" }, { value: "Sonntag", label: "Sonntag" }];
+  return weekends.find((weekend) => weekend.id === eventId)?.signupDays ?? [{ value: "Samstag", label: "Samstag · ab 10 Uhr" }, { value: "Sonntag", label: "Sonntag · ab 10 Uhr" }];
 }
 
 
 export default function SignupPage() {
-  const [signups, setSignups] = useState<Signup[]>([]); const [firstName, setFirstName] = useState(""); const [lastName, setLastName] = useState(""); const [comment, setComment] = useState(""); const [weekendDay, setWeekendDay] = useState("Samstag"); const [childrenAges, setChildrenAges] = useState(""); const [target, setTarget] = useState<SignupTarget | null>(null); const [myIds, setMyIds] = useState<string[]>([]); const [cancellationTokens, setCancellationTokens] = useState<Record<string, string>>({}); const [status, setStatus] = useState<"idle" | "saving" | "error">("idle"); const [cancellation, setCancellation] = useState<Signup | null>(null); const [cancellationStatus, setCancellationStatus] = useState<"idle" | "saving" | "error">("idle"); const [completedTarget, setCompletedTarget] = useState<SignupTarget | null>(null); const [now, setNow] = useState<Date | null>(null); const [openConstructionDay, setOpenConstructionDay] = useState<string | null>(null); const [openWeekendId, setOpenWeekendId] = useState<string | null>(null); const [cancellationRequestTarget, setCancellationRequestTarget] = useState<CancellationRequestTarget | null>(null); const [requestedSignupId, setRequestedSignupId] = useState(""); const [requestMessage, setRequestMessage] = useState(""); const [requestStatus, setRequestStatus] = useState<"idle" | "saving" | "success" | "error">("idle"); const [directCancellationTarget, setDirectCancellationTarget] = useState<DirectCancellationTarget | null>(null); const [directCancellationId, setDirectCancellationId] = useState("");
+  const [signups, setSignups] = useState<Signup[]>([]); const [firstName, setFirstName] = useState(""); const [lastName, setLastName] = useState(""); const [comment, setComment] = useState(""); const [weekendDays, setWeekendDays] = useState<string[]>([]); const [childrenAges, setChildrenAges] = useState(""); const [target, setTarget] = useState<SignupTarget | null>(null); const [myIds, setMyIds] = useState<string[]>([]); const [cancellationTokens, setCancellationTokens] = useState<Record<string, string>>({}); const [status, setStatus] = useState<"idle" | "saving" | "error">("idle"); const [cancellation, setCancellation] = useState<Signup | null>(null); const [cancellationStatus, setCancellationStatus] = useState<"idle" | "saving" | "error">("idle"); const [completedTarget, setCompletedTarget] = useState<SignupTarget | null>(null); const [completedDays, setCompletedDays] = useState<string[]>([]); const [now, setNow] = useState<Date | null>(null); const [openConstructionDay, setOpenConstructionDay] = useState<string | null>(null); const [openWeekendId, setOpenWeekendId] = useState<string | null>(null); const [cancellationRequestTarget, setCancellationRequestTarget] = useState<CancellationRequestTarget | null>(null); const [requestedSignupId, setRequestedSignupId] = useState(""); const [requestMessage, setRequestMessage] = useState(""); const [requestStatus, setRequestStatus] = useState<"idle" | "saving" | "success" | "error">("idle"); const [directCancellationTarget, setDirectCancellationTarget] = useState<DirectCancellationTarget | null>(null); const [directCancellationId, setDirectCancellationId] = useState("");
   useEffect(() => {
     const saved = window.localStorage.getItem("regen406-my-signups");
     if (saved) {
@@ -75,7 +75,8 @@ export default function SignupPage() {
   }, []);
   useEffect(() => { const previewDate = new URLSearchParams(window.location.search).get("previewDate"); const parsedPreview = previewDate && /^\d{4}-\d{2}-\d{2}$/.test(previewDate) ? new Date(`${previewDate}T12:00:00+02:00`) : null; setNow(parsedPreview && !Number.isNaN(parsedPreview.getTime()) ? parsedPreview : new Date()); }, []);
   useEffect(() => { if (!now) return; setOpenConstructionDay(constructionDays.find((day) => new Date(day.endsAt) > now)?.date ?? null); setOpenWeekendId(weekends.find((weekend) => new Date(weekend.endsAt) > now)?.id ?? null); }, [now]);
-  function openSignup(nextTarget: SignupTarget) { setTarget(nextTarget); setWeekendDay(nextTarget.eventType === "weekend" ? signupDaysForWeekend(nextTarget.eventId)[0].value : "Samstag"); setFirstName(""); setLastName(""); setComment(""); setChildrenAges(""); setStatus("idle"); }
+  function openSignup(nextTarget: SignupTarget) { setTarget(nextTarget); setWeekendDays([]); setFirstName(""); setLastName(""); setComment(""); setChildrenAges(""); setStatus("idle"); }
+  function toggleWeekendDay(value: string) { setWeekendDays((current) => current.includes(value) ? current.filter((day) => day !== value) : [...current, value]); }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!target || status === "saving") return;
@@ -86,13 +87,12 @@ export default function SignupPage() {
     const submittedLastName = isChildrenSignup ? "" : lastName.trim();
     const submittedComment = isChildrenSignup ? "" : comment.trim();
     const submittedChildrenAges = isChildrenSignup ? childrenAges.trim() : "";
-    if ((!isChildrenSignup && (!submittedFirstName || !submittedLastName)) || (isChildrenSignup && !submittedChildrenAges)) {
+    const selectedWeekendDays = submittedTarget.eventType === "weekend" ? weekendDays : [];
+    if ((!isChildrenSignup && (!submittedFirstName || !submittedLastName)) || (isChildrenSignup && !submittedChildrenAges) || (submittedTarget.eventType === "weekend" && selectedWeekendDays.length === 0)) {
       setStatus("error");
       return;
     }
 
-    const day = submittedTarget.eventType === "weekend" ? weekendDay : submittedTarget.slot;
-    const signupId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : "";
     setStatus("saving");
 
     try {
@@ -100,9 +100,9 @@ export default function SignupPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          signupId,
           weekendId: submittedTarget.eventId,
-          day,
+          day: submittedTarget.eventType === "construction-week" ? submittedTarget.slot : selectedWeekendDays[0],
+          days: submittedTarget.eventType === "weekend" ? selectedWeekendDays : undefined,
           firstName: submittedFirstName,
           lastName: submittedLastName,
           comment: submittedComment,
@@ -112,28 +112,38 @@ export default function SignupPage() {
         }),
       });
       const data = await response.json();
-      if (!response.ok || !data.signup) throw new Error(data.error);
+      const savedSignups: Signup[] = Array.isArray(data.signups) ? data.signups : data.signup ? [data.signup] : [];
+      if (!response.ok || savedSignups.length === 0) throw new Error(data.error);
 
-      setSignups((current) => [...current.filter((signup) => signup.id !== data.signup.id), data.signup]);
+      setSignups((current) => {
+        const savedIds = new Set(savedSignups.map((signup) => signup.id));
+        return [...current.filter((signup) => !savedIds.has(signup.id)), ...savedSignups];
+      });
       setMyIds((current) => {
-        const updated = [...current.filter((id) => id !== data.signup.id), data.signup.id];
+        const updated = Array.from(new Set([...current, ...savedSignups.map((signup) => signup.id)]));
         window.localStorage.setItem("regen406-my-signups", JSON.stringify(updated));
         return updated;
       });
 
-      if (data.cancellationToken) {
+      const returnedTokens: Record<string, string> = data.cancellationTokens ?? (data.cancellationToken && savedSignups[0] ? { [savedSignups[0].id]: data.cancellationToken } : {});
+      if (Object.keys(returnedTokens).length > 0) {
         setCancellationTokens((current) => {
-          const updated = { ...current, [data.signup.id]: data.cancellationToken };
+          const updated = { ...current, ...returnedTokens };
           window.localStorage.setItem("regen406-cancel-tokens", JSON.stringify(updated));
           return updated;
         });
       }
 
+      const selectedLabels = submittedTarget.eventType === "weekend"
+        ? signupDaysForWeekend(submittedTarget.eventId).filter((option) => selectedWeekendDays.includes(option.value)).map((option) => option.label)
+        : [];
       setStatus("idle");
       setFirstName("");
       setLastName("");
       setComment("");
       setChildrenAges("");
+      setWeekendDays([]);
+      setCompletedDays(selectedLabels);
       setCompletedTarget(submittedTarget);
       setTarget(null);
     } catch {
@@ -241,8 +251,8 @@ export default function SignupPage() {
       })}</div>
     </section>}
     <section className="weekends" id="termine"><div className="section-heading"><h2>REGEN406<br />Baustellen-<br />Wochenenden</h2><p>An unseren Baustellen-Wochenenden bringen wir REGEN406 gemeinsam voran. Das Baustellencafé öffnet jeweils am angegebenen Tag von <strong>15–17 Uhr</strong> – für alle, die neugierig sind, die Baustelle anschauen und uns bei Getränken und Snacks kennenlernen wollen.</p></div>{weekendCards(2026).length > 0 && <><h3>2026</h3><div className="cards">{weekendCards(2026)}</div></>}{weekendCards(2027).length > 0 && <><h3 className="year-heading">2027</h3><div className="cards">{weekendCards(2027)}</div></>}</section>
-    {target && <div className="modal-backdrop" role="presentation" onMouseDown={() => setTarget(null)}><section className="signup-modal" role="dialog" aria-modal="true" aria-labelledby="signup-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setTarget(null)}>×</button><p className="eyebrow">{target.title}</p><h2 id="signup-title">Super, dass du dabei bist!</h2><p>{target.eventType === "construction-week" ? target.role === "Kinder" ? <>Trag hier bitte nur das <strong>Alter der Kinder</strong> ein. So können wir die Kinderbetreuung passend vorbereiten.</> : <>Du hilfst als <strong>{target.role}</strong>.</> : "Trag dich ein – wir freuen uns auf dich."}</p><form onSubmit={submit}>{target.eventType === "construction-week" && target.role === "Kinder" ? <label>Alter der Kinder<input required value={childrenAges} onChange={(event) => setChildrenAges(event.target.value)} maxLength={80} inputMode="text" placeholder="z. B. 3, 6" /><span className="field-help">Bitte nur das Alter eintragen, keine Namen.</span></label> : <><div className="name-fields"><label>Vorname<input required value={firstName} onChange={(event) => setFirstName(event.target.value)} maxLength={50} autoComplete="given-name" /></label><label>Nachname<input required value={lastName} onChange={(event) => setLastName(event.target.value)} maxLength={80} autoComplete="family-name" /></label></div><span className="field-help name-privacy-note">Auf der öffentlichen Seite wird nur dein Vorname angezeigt.</span><label>Kommentar <span className="optional">(optional)</span><textarea value={comment} onChange={(event) => setComment(event.target.value)} maxLength={500} rows={3} placeholder="Zum Beispiel: Ich komme etwas später." /></label></>}{target.eventType === "weekend" && <fieldset><legend>Wann kannst du helfen?</legend><div className="day-buttons">{signupDaysForWeekend(target.eventId).map((option) => <button key={option.value} type="button" className={weekendDay === option.value ? "selected" : ""} onClick={() => setWeekendDay(option.value)}>{option.label}</button>)}</div></fieldset>}{status === "error" && <p className="error">Das hat leider nicht geklappt. Bitte prüfe deine Angaben und versuch es noch einmal.</p>}<button className="submit" type="submit" disabled={status === "saving"}>{status === "saving" ? "Wird eingetragen …" : target.eventType === "construction-week" && target.role === "Kinder" ? "Kinder verbindlich eintragen" : "Verbindlich eintragen"}</button></form></section></div>}
-    {completedTarget && <div className="modal-backdrop" role="presentation" onMouseDown={closeCompletedSignup}><section className="signup-modal success-modal" role="dialog" aria-modal="true" aria-labelledby="success-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={closeCompletedSignup}>×</button><p className="eyebrow">ANMELDUNG GESPEICHERT</p><h2 id="success-title">Super, du bist dabei!</h2><p>Du bist für <strong>{completedTarget.title}</strong> eingetragen.</p><a className="signal-cta" href={SIGNAL_URL} target="_blank" rel="noreferrer">Signal-Gruppe beitreten <span>↗</span></a><p className="signal-note">Dort teilen wir aktuelle Infos zu Bau-Wochenenden und der Baustellen-Woche.</p></section></div>}
+    {target && <div className="modal-backdrop" role="presentation" onMouseDown={() => setTarget(null)}><section className="signup-modal" role="dialog" aria-modal="true" aria-labelledby="signup-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setTarget(null)}>×</button><p className="eyebrow">{target.title}</p><h2 id="signup-title">Super, dass du dabei bist!</h2><p>{target.eventType === "construction-week" ? target.role === "Kinder" ? <>Trag hier bitte nur das <strong>Alter der Kinder</strong> ein. So können wir die Kinderbetreuung passend vorbereiten.</> : <>Du hilfst als <strong>{target.role}</strong>.</> : "Trag dich ein – wir freuen uns auf dich."}</p><form onSubmit={submit}>{target.eventType === "construction-week" && target.role === "Kinder" ? <label>Alter der Kinder<input required value={childrenAges} onChange={(event) => setChildrenAges(event.target.value)} maxLength={80} inputMode="text" placeholder="z. B. 3, 6" /><span className="field-help">Bitte nur das Alter eintragen, keine Namen.</span></label> : <><div className="name-fields"><label>Vorname<input required value={firstName} onChange={(event) => setFirstName(event.target.value)} maxLength={50} autoComplete="given-name" /></label><label>Nachname<input required value={lastName} onChange={(event) => setLastName(event.target.value)} maxLength={80} autoComplete="family-name" /></label></div><span className="field-help name-privacy-note">Auf der öffentlichen Seite wird nur dein Vorname angezeigt.</span><label>Kommentar <span className="optional">(optional)</span><textarea value={comment} onChange={(event) => setComment(event.target.value)} maxLength={500} rows={3} placeholder="Zum Beispiel: Ich komme etwas später." /></label></>}{target.eventType === "weekend" && <fieldset><legend>Wann kannst du helfen? <span className="optional">(Mehrfachauswahl möglich)</span></legend><div className="day-checkboxes">{signupDaysForWeekend(target.eventId).map((option) => <label key={option.value} className={weekendDays.includes(option.value) ? "selected" : ""}><input type="checkbox" checked={weekendDays.includes(option.value)} onChange={() => toggleWeekendDay(option.value)} /><span>{option.label}</span></label>)}</div></fieldset>}{status === "error" && <p className="error">Das hat leider nicht geklappt. Bitte prüfe deine Angaben und versuch es noch einmal.</p>}<button className="submit" type="submit" disabled={status === "saving"}>{status === "saving" ? "Wird eingetragen …" : target.eventType === "construction-week" && target.role === "Kinder" ? "Kinder verbindlich eintragen" : "Verbindlich eintragen"}</button></form></section></div>}
+    {completedTarget && <div className="modal-backdrop" role="presentation" onMouseDown={closeCompletedSignup}><section className="signup-modal success-modal" role="dialog" aria-modal="true" aria-labelledby="success-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={closeCompletedSignup}>×</button><p className="eyebrow">ANMELDUNG GESPEICHERT</p><h2 id="success-title">Super, du bist dabei!</h2><p>Du bist für <strong>{completedTarget.title}</strong> eingetragen.</p>{completedTarget.eventType === "weekend" && completedDays.length > 0 && <ul className="success-days">{completedDays.map((day) => <li key={day}>{day}</li>)}</ul>}<a className="signal-cta" href={SIGNAL_URL} target="_blank" rel="noreferrer">Signal-Gruppe beitreten <span>↗</span></a><p className="signal-note">Dort teilen wir aktuelle Infos zu Bau-Wochenenden und der Baustellen-Woche.</p></section></div>}
     {cancellation && <div className="modal-backdrop" role="presentation" onMouseDown={() => setCancellation(null)}><section className="signup-modal cancellation-modal" role="dialog" aria-modal="true" aria-labelledby="cancellation-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setCancellation(null)}>×</button><p className="eyebrow">ABMELDUNG</p><h2 id="cancellation-title">Willst du dich wirklich abmelden?</h2><p>{cancellation.role === "Kinder" ? <>Der Eintrag für <strong>Alter: {cancellation.children_ages || cancellation.name}</strong> wird sofort aus der Liste entfernt.</> : <>Dein Eintrag für <strong>{cancellation.name}</strong> wird sofort aus der Liste entfernt.</>}</p>{cancellationStatus === "error" && <p className="error">Das hat leider nicht geklappt. Bitte versuch es gleich noch einmal.</p>}<button className="submit" type="button" onClick={requestCancellation} disabled={cancellationStatus === "saving"}>{cancellationStatus === "saving" ? "Wird ausgetragen …" : "Ja, jetzt austragen"}</button></section></div>}
     {directCancellationTarget && <div className="modal-backdrop" role="presentation" onMouseDown={() => setDirectCancellationTarget(null)}><section className="signup-modal cancellation-modal" role="dialog" aria-modal="true" aria-labelledby="direct-cancellation-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setDirectCancellationTarget(null)}>×</button><p className="eyebrow">ABMELDUNG</p><h2 id="direct-cancellation-title">Welchen Eintrag möchtest du abmelden?</h2><p className="request-context"><strong>{directCancellationTarget.title}</strong></p><form onSubmit={chooseDirectCancellation}><label>Dein Eintrag<select required value={directCancellationId} onChange={(event) => setDirectCancellationId(event.target.value)}><option value="">Bitte auswählen</option>{directCancellationTarget.people.map((person) => <option key={person.id} value={person.id}>{person.role === "Kinder" ? `Alter: ${person.children_ages || person.name}` : `${person.event_type === "weekend" ? `${person.day} · ` : ""}${person.name}`}</option>)}</select></label><button className="submit" type="submit">Weiter</button></form></section></div>}
     {cancellationRequestTarget && <div className="modal-backdrop" role="presentation" onMouseDown={() => setCancellationRequestTarget(null)}><section className="signup-modal cancellation-modal" role="dialog" aria-modal="true" aria-labelledby="request-cancellation-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setCancellationRequestTarget(null)}>×</button><p className="eyebrow">ABMELDUNG ANFRAGEN</p><h2 id="request-cancellation-title">Dein Eintrag ist nicht mehr als eigener erkannt?</h2><p>Wähle deinen Eintrag aus. Wir prüfen die Anfrage und entfernen ihn anschließend.</p><p className="request-context"><strong>{cancellationRequestTarget.title}</strong></p>{requestStatus === "success" ? <><p className="success-note">Danke! Deine Abmeldeanfrage ist bei uns angekommen.</p><button className="submit" type="button" onClick={() => setCancellationRequestTarget(null)}>Schließen</button></> : <form onSubmit={submitCancellationRequest}><label>Dein Eintrag<select required value={requestedSignupId} onChange={(event) => setRequestedSignupId(event.target.value)}><option value="">Bitte auswählen</option>{cancellationRequestTarget.people.map((person) => <option key={person.id} value={person.id}>{person.role === "Kinder" ? `Alter: ${person.children_ages || person.name}` : `${person.event_type === "weekend" ? `${person.day} · ` : ""}${person.name}`}</option>)}</select></label><label>Hinweis <span className="optional">(optional)</span><textarea value={requestMessage} onChange={(event) => setRequestMessage(event.target.value)} maxLength={500} rows={3} placeholder="Falls hilfreich, kurz dazuschreiben." /></label>{requestStatus === "error" && <p className="error">Die Anfrage konnte nicht gesendet werden. Bitte versuch es noch einmal.</p>}<button className="submit" type="submit" disabled={requestStatus === "saving"}>{requestStatus === "saving" ? "Wird gesendet …" : "Abmeldung anfragen"}</button></form>}</section></div>}
