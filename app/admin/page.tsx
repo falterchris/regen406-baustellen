@@ -39,13 +39,19 @@ const slotLabels: Record<string, string> = {
   "sat-17-evening": "Sa. 17.10. · 15–20 Uhr",
   "sun-18-morning": "So. 18.10. · 10–15 Uhr",
   "sun-18-evening": "So. 18.10. · 15–19 Uhr (entfallen)",
-  "Freitag · 14–19 Uhr": "Fr. 13.11. · 14–19 Uhr",
-  Samstag: "Samstag · ab 10 Uhr",
-  Sonntag: "Sonntag · ab 10 Uhr",
+  "Freitag · 14–19 Uhr": "Freitag · 14–19 Uhr",
+  "Samstag · 10–14 Uhr": "Samstag · 10–14 Uhr",
+  "Samstag · 14–19 Uhr": "Samstag · 14–19 Uhr",
+  "Sonntag · 10–14 Uhr": "Sonntag · 10–14 Uhr",
+  "Sonntag · 14–19 Uhr": "Sonntag · 14–19 Uhr",
+  Samstag: "Samstag · bisher ganztags",
+  Sonntag: "Sonntag · bisher ganztags",
 };
 
-const constructionSlots = Object.entries(slotLabels).filter(([key]) => !["Freitag · 14–19 Uhr", "Samstag", "Sonntag", "sun-18-evening"].includes(key));
+const weekendSlotKeys = ["Freitag · 14–19 Uhr", "Samstag · 10–14 Uhr", "Samstag · 14–19 Uhr", "Sonntag · 10–14 Uhr", "Sonntag · 14–19 Uhr", "Samstag", "Sonntag"];
+const constructionSlots = Object.entries(slotLabels).filter(([key]) => ![...weekendSlotKeys, "sun-18-evening"].includes(key));
 const constructionRoles = ["Verpflegung", "Lead", "Helfer:in", "Kinderbetreuung", "Kinder"];
+const weekendRoles = ["Helfer:in", "Verpflegung", "Kinderbetreuung"];
 const weekendOptions = [
   ["nov-2026", "13.–15. November 2026"],
   ["dec-2026", "12.–13. Dezember 2026"],
@@ -55,7 +61,25 @@ const weekendOptions = [
 ] as const;
 
 function weekendSlotsFor(eventId: string) {
-  return eventId === "nov-2026" ? ["Freitag · 14–19 Uhr", "Samstag", "Sonntag"] : ["Samstag", "Sonntag"];
+  return eventId === "nov-2026" ? ["Freitag · 14–19 Uhr", "Samstag · 10–14 Uhr", "Samstag · 14–19 Uhr", "Sonntag · 10–14 Uhr", "Sonntag · 14–19 Uhr"] : ["Samstag · 10–14 Uhr", "Samstag · 14–19 Uhr", "Sonntag · 10–14 Uhr", "Sonntag · 14–19 Uhr"];
+}
+
+const weekendDates: Record<string, { friday?: string; saturday: string; sunday: string }> = {
+  "nov-2026": { friday: "Fr. 13.11.", saturday: "Sa. 14.11.", sunday: "So. 15.11." },
+  "dec-2026": { saturday: "Sa. 12.12.", sunday: "So. 13.12." },
+  "jan-2027": { saturday: "Sa. 09.01.", sunday: "So. 10.01." },
+  "feb-2027": { saturday: "Sa. 06.02.", sunday: "So. 07.02." },
+  "mar-2027": { saturday: "Sa. 06.03.", sunday: "So. 07.03." },
+};
+
+function adminSlotLabel(signup: Pick<AdminSignup, "event_type" | "event_id" | "slot">) {
+  if (signup.event_type === "construction-week") return slotLabels[signup.slot] ?? signup.slot;
+  const dates = weekendDates[signup.event_id];
+  if (!dates) return slotLabels[signup.slot] ?? signup.slot;
+  if (signup.slot === "Freitag · 14–19 Uhr") return `${dates.friday ?? "Freitag"} · 14–19 Uhr`;
+  if (signup.slot.startsWith("Samstag · ")) return `${dates.saturday} · ${signup.slot.replace("Samstag · ", "")}`;
+  if (signup.slot.startsWith("Sonntag · ")) return `${dates.sunday} · ${signup.slot.replace("Sonntag · ", "")}`;
+  return slotLabels[signup.slot] ?? signup.slot;
 }
 
 function csvEscape(value: unknown) {
@@ -161,14 +185,14 @@ export default function AdminPage() {
   }
 
   const filtered = useMemo(() => signups.filter((signup) => {
-    const haystack = `${signup.name ?? ""} ${signup.comment ?? ""} ${signup.child_ages ?? ""} ${signup.role ?? ""} ${slotLabels[signup.slot] ?? signup.slot}`.toLowerCase();
+    const haystack = `${signup.name ?? ""} ${signup.comment ?? ""} ${signup.child_ages ?? ""} ${signup.role ?? ""} ${adminSlotLabel(signup)}`.toLowerCase();
     return (role === "alle" || (signup.role || "Wochenende") === role) && (slot === "alle" || signup.slot === slot) && (!search || haystack.includes(search.toLowerCase()));
   }), [signups, role, slot, search]);
 
   function exportCsv() {
     const header = ["ID", "Typ", "Termin", "Schicht/Tag", "Rolle", "Name", "Kommentar", "Kinder (Alter)", "Erstellt am"];
     const lines = [header.map(csvEscape).join(";")];
-    for (const s of filtered) lines.push([s.id, s.event_type, s.event_id, slotLabels[s.slot] ?? s.slot, s.role ?? "", s.name ?? "", s.comment ?? "", s.child_ages ?? "", s.created_at].map(csvEscape).join(";"));
+    for (const s of filtered) lines.push([s.id, s.event_type, s.event_id, adminSlotLabel(s), s.role ?? "", s.name ?? "", s.comment ?? "", s.child_ages ?? "", s.created_at].map(csvEscape).join(";"));
     const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "regen406-anmeldungen.csv"; a.click(); URL.revokeObjectURL(url);
   }
@@ -185,14 +209,14 @@ export default function AdminPage() {
   return <main className="admin-shell">
     <header className="admin-header"><div><p className="eyebrow">REGEN406 ADMIN</p><h1>Anmeldungen</h1><p>{signups.length} Einträge · {helpers} Helfer:innen · {childcare} Kinderbetreuung · {children} Kinder-Einträge</p></div><div className="admin-actions"><a href="/">Anmeldeseite ↗</a><button type="button" onClick={logout}>Abmelden</button></div></header>
 
-    {requests.length > 0 && <section className="admin-requests"><div className="admin-section-heading"><div><p className="eyebrow">OFFENE ABMELDUNGEN</p><h2>{requests.length} {requests.length === 1 ? "Anfrage" : "Anfragen"}</h2></div></div><div className="admin-request-list">{requests.map((item) => <article className="admin-request" key={item.id}><div><strong>{signupLabel(item.signup)}</strong><p>{item.signup ? `${slotLabels[item.signup.slot] ?? item.signup.slot}${item.signup.role ? ` · ${item.signup.role}` : ""}` : "Eintrag nicht mehr vorhanden"}</p>{item.message && <p className="admin-request-message">„{item.message}“</p>}<small>{new Date(item.created_at).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}</small></div><div className="admin-request-actions"><button type="button" onClick={() => handleCancellationRequest(item, "approve")}>Bestätigen & löschen</button><button className="secondary" type="button" onClick={() => handleCancellationRequest(item, "reject")}>Ablehnen</button></div></article>)}</div></section>}
+    {requests.length > 0 && <section className="admin-requests"><div className="admin-section-heading"><div><p className="eyebrow">OFFENE ABMELDUNGEN</p><h2>{requests.length} {requests.length === 1 ? "Anfrage" : "Anfragen"}</h2></div></div><div className="admin-request-list">{requests.map((item) => <article className="admin-request" key={item.id}><div><strong>{signupLabel(item.signup)}</strong><p>{item.signup ? `${adminSlotLabel(item.signup)}${item.signup.role ? ` · ${item.signup.role}` : ""}` : "Eintrag nicht mehr vorhanden"}</p>{item.message && <p className="admin-request-message">„{item.message}“</p>}<small>{new Date(item.created_at).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}</small></div><div className="admin-request-actions"><button type="button" onClick={() => handleCancellationRequest(item, "approve")}>Bestätigen & löschen</button><button className="secondary" type="button" onClick={() => handleCancellationRequest(item, "reject")}>Ablehnen</button></div></article>)}</div></section>}
 
     <section className="admin-toolbar"><input placeholder="Name, Kommentar, Alter …" value={search} onChange={(e) => setSearch(e.target.value)} /><select value={role} onChange={(e) => setRole(e.target.value)}><option value="alle">Alle Rollen</option>{roles.map((r) => <option key={r}>{r}</option>)}</select><select value={slot} onChange={(e) => setSlot(e.target.value)}><option value="alle">Alle Schichten</option>{slots.map((s) => <option value={s} key={s}>{slotLabels[s] ?? s}</option>)}</select><button type="button" onClick={exportCsv}>CSV exportieren</button></section>
     <p className="admin-result-count">{filtered.length} angezeigt</p>
-    <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Schicht / Tag</th><th>Rolle</th><th>Name / Kinder</th><th>Kommentar</th><th>Erstellt</th><th></th></tr></thead><tbody>{filtered.map((s) => <tr key={s.id}><td>{slotLabels[s.slot] ?? `${s.event_id} · ${s.slot}`}</td><td>{s.role || "Wochenende"}</td><td>{signupLabel(s)}</td><td>{s.comment || "–"}</td><td>{new Date(s.created_at).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}</td><td><div className="admin-row-actions"><button className="admin-edit" type="button" onClick={() => openEdit(s)}>Bearbeiten</button><button className="admin-delete" type="button" onClick={() => remove(s)}>Löschen</button></div></td></tr>)}</tbody></table></div>
+    <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Schicht / Tag</th><th>Rolle</th><th>Name / Kinder</th><th>Kommentar</th><th>Erstellt</th><th></th></tr></thead><tbody>{filtered.map((s) => <tr key={s.id}><td>{adminSlotLabel(s)}</td><td>{s.role || "Wochenende"}</td><td>{signupLabel(s)}</td><td>{s.comment || "–"}</td><td>{new Date(s.created_at).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}</td><td><div className="admin-row-actions"><button className="admin-edit" type="button" onClick={() => openEdit(s)}>Bearbeiten</button><button className="admin-delete" type="button" onClick={() => remove(s)}>Löschen</button></div></td></tr>)}</tbody></table></div>
 
     {editing && editDraft && <div className="modal-backdrop" role="presentation" onMouseDown={() => setEditing(null)}><section className="signup-modal admin-edit-modal" role="dialog" aria-modal="true" aria-labelledby="admin-edit-title" onMouseDown={(event) => event.stopPropagation()}><button className="close" type="button" aria-label="Schließen" onClick={() => setEditing(null)}>×</button><p className="eyebrow">EINTRAG BEARBEITEN</p><h2 id="admin-edit-title">{signupLabel(editing)}</h2><form onSubmit={saveEdit}>
-      {editDraft.event_type === "construction-week" ? <><label>Schicht<select value={editDraft.slot} onChange={(e) => setEditDraft({ ...editDraft, slot: e.target.value })}>{constructionSlots.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label><label>Rolle<select value={editDraft.role ?? "Helfer:in"} onChange={(e) => setEditDraft({ ...editDraft, role: e.target.value, name: e.target.value === "Kinder" ? "" : editDraft.name, child_ages: e.target.value === "Kinder" ? editDraft.child_ages : null })}>{constructionRoles.map((value) => <option value={value} key={value}>{value}</option>)}</select></label></> : <><label>Baustellen-Wochenende<select value={editDraft.event_id} onChange={(e) => { const nextEventId = e.target.value; const nextSlots = weekendSlotsFor(nextEventId); setEditDraft({ ...editDraft, event_id: nextEventId, slot: nextSlots.includes(editDraft.slot) ? editDraft.slot : "Samstag" }); }}>{weekendOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label><label>Tag / Schicht<select value={editDraft.slot} onChange={(e) => setEditDraft({ ...editDraft, slot: e.target.value })}>{weekendSlotsFor(editDraft.event_id).map((value) => <option value={value} key={value}>{slotLabels[value] ?? value}</option>)}</select></label></>}
+      {editDraft.event_type === "construction-week" ? <><label>Schicht<select value={editDraft.slot} onChange={(e) => setEditDraft({ ...editDraft, slot: e.target.value })}>{constructionSlots.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label><label>Rolle<select value={editDraft.role ?? "Helfer:in"} onChange={(e) => setEditDraft({ ...editDraft, role: e.target.value, name: e.target.value === "Kinder" ? "" : editDraft.name, child_ages: e.target.value === "Kinder" ? editDraft.child_ages : null })}>{constructionRoles.map((value) => <option value={value} key={value}>{value}</option>)}</select></label></> : <><label>Baustellen-Wochenende<select value={editDraft.event_id} onChange={(e) => { const nextEventId = e.target.value; const nextSlots = weekendSlotsFor(nextEventId); setEditDraft({ ...editDraft, event_id: nextEventId, slot: nextSlots.includes(editDraft.slot) ? editDraft.slot : nextSlots[0] }); }}>{weekendOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label><label>Tag / Schicht<select value={editDraft.slot} onChange={(e) => setEditDraft({ ...editDraft, slot: e.target.value })}>{weekendSlotsFor(editDraft.event_id).map((value) => <option value={value} key={value}>{slotLabels[value] ?? value}</option>)}</select></label><label>Rolle<select value={editDraft.role ?? "Helfer:in"} onChange={(e) => setEditDraft({ ...editDraft, role: e.target.value })}>{weekendRoles.map((value) => <option value={value} key={value}>{value}</option>)}</select></label></>}
       {editDraft.event_type === "construction-week" && editDraft.role === "Kinder" ? <label>Alter der Kinder<input required value={editDraft.child_ages ?? ""} onChange={(e) => setEditDraft({ ...editDraft, child_ages: e.target.value })} placeholder="z. B. 3, 6" /></label> : <><label>Name<input required value={editDraft.name ?? ""} onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })} /></label><label>Kommentar <span className="optional">(optional)</span><textarea rows={3} maxLength={500} value={editDraft.comment ?? ""} onChange={(e) => setEditDraft({ ...editDraft, comment: e.target.value })} /></label></>}
       {editStatus === "error" && <p className="error">Speichern hat nicht geklappt. Bitte prüfe die Angaben.</p>}<button className="submit" type="submit" disabled={editStatus === "saving"}>{editStatus === "saving" ? "Wird gespeichert …" : "Änderungen speichern"}</button>
     </form></section></div>}

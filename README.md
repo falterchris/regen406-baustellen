@@ -1,3 +1,7 @@
+## v36.2 – Checkbox layout fix
+
+- Weekend multi-select checkbox labels stay aligned beside the checkbox on desktop and mobile.
+
 # REGEN406 Baustellen-Anmeldung
 ## v30 – Supabase statt Google Sheets
 
@@ -140,3 +144,13 @@ npm run dev
 - Pop-ups sind auf kleinen Displays intern scrollbar und responsiver.
 - Baustellen-Wochenenden erlauben Mehrfachauswahl pro Wochenende.
 - Samstag und Sonntag werden mit „ab 10 Uhr“ angezeigt; Freitag im November bleibt 14–19 Uhr.
+
+## v37 – Wochenend-Schichten und Rollen
+
+Die Baustellen-Wochenenden sind ab v37 in Schichten organisiert:
+- Freitag im November: 14–19 Uhr
+- Samstag: 10–14 Uhr und 14–19 Uhr
+- Sonntag: 10–14 Uhr und 14–19 Uhr
+- Rollen: Helfer:in, Verpflegung, Kinderbetreuung
+
+Vorhandene Ganztags-Anmeldungen werden einmalig mit `supabase/v37-weekend-shifts.sql` migriert. Samstag-/Sonntag-Einträge werden als Helfer:in in beide Schichten übernommen. Freitag bleibt 14–19 Uhr.

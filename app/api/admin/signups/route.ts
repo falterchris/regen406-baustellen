@@ -4,10 +4,14 @@ import { supabaseRest } from "@/lib/supabase-rest";
 
 const select = "id,event_type,event_id,slot,role,name,comment,child_ages,created_at,legacy_import";
 const allowedWeekends = new Set(["nov-2026", "dec-2026", "jan-2027", "feb-2027", "mar-2027"]);
-const allowedDays = new Set(["Samstag", "Sonntag"]);
+const standardWeekendSlots = new Set([
+  "Samstag · 10–14 Uhr", "Samstag · 14–19 Uhr",
+  "Sonntag · 10–14 Uhr", "Sonntag · 14–19 Uhr",
+]);
 const NOVEMBER_FRIDAY_SLOT = "Freitag · 14–19 Uhr";
+const allowedWeekendRoles = new Set(["Helfer:in", "Verpflegung", "Kinderbetreuung"]);
 function validWeekendSlot(eventId: string, slot: string) {
-  return allowedWeekends.has(eventId) && (allowedDays.has(slot) || (eventId === "nov-2026" && slot === NOVEMBER_FRIDAY_SLOT));
+  return allowedWeekends.has(eventId) && (standardWeekendSlots.has(slot) || (eventId === "nov-2026" && slot === NOVEMBER_FRIDAY_SLOT));
 }
 const allowedConstructionSlots = new Set([
   "fri-09-evening", "sat-10-morning", "sat-10-evening", "sun-11-morning",
@@ -38,7 +42,7 @@ export async function PATCH(request: Request) {
     const eventType = body.event_type === "construction-week" ? "construction-week" : "weekend";
     const eventId = String(body.event_id ?? "").trim();
     const slot = String(body.slot ?? "").trim();
-    const role = eventType === "construction-week" ? String(body.role ?? "").trim() : "";
+    const role = String(body.role ?? "").trim();
     const isChildren = eventType === "construction-week" && role === "Kinder";
     const name = isChildren ? "" : String(body.name ?? "").trim();
     const comment = isChildren ? "" : String(body.comment ?? "").trim();
@@ -46,7 +50,7 @@ export async function PATCH(request: Request) {
 
     const valid = eventType === "construction-week"
       ? eventId === "construction-week" && allowedConstructionSlots.has(slot) && allowedRoles.has(role)
-      : validWeekendSlot(eventId, slot);
+      : validWeekendSlot(eventId, slot) && allowedWeekendRoles.has(role);
 
     if (!valid || (!isChildren && !name) || (isChildren && !childAges) || name.length > 80 || comment.length > 500 || childAges.length > 80) {
       return NextResponse.json({ error: "Bitte fülle alle Felder korrekt aus." }, { status: 400 });
@@ -59,7 +63,7 @@ export async function PATCH(request: Request) {
         event_type: eventType,
         event_id: eventId,
         slot,
-        role: eventType === "construction-week" ? role : null,
+        role: role || null,
         name,
         comment,
         child_ages: childAges || null,

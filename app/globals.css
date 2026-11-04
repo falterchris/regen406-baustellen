@@ -1060,3 +1060,104 @@ footer a {
   .construction-day-past p { grid-column: 1; }
   .construction-day-past small { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
 }
+
+/* Keep weekend multi-select checkbox and label text aligned in one row. */
+.signup-modal .day-checkboxes label,
+.signup-modal .day-checkboxes label + label {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  margin-top: 0;
+}
+.signup-modal .day-checkboxes input[type="checkbox"] {
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+}
+.signup-modal .day-checkboxes span {
+  display: block;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+/* v37: Wochenenden mit Schichten + Rollen */
+.hero-actions {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+.hero-actions .signup-jump {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.weekend-card {
+  scroll-margin-top: 18px;
+}
+.weekend-schedule {
+  display: grid;
+  gap: 22px;
+  margin-top: 18px;
+}
+.weekend-day-block + .weekend-day-block {
+  padding-top: 20px;
+  border-top: 2px solid var(--green);
+}
+.weekend-day-block > h4 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+.weekend-shift + .weekend-shift {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.weekend-shift > h5 {
+  margin: 0 0 10px;
+  font-size: .9rem;
+}
+.weekend-role-card {
+  border-color: var(--green);
+  background: #fffdf4;
+}
+.weekend-role-card .signup-names li,
+.weekend-role-card .signup-names li.is-me {
+  background: var(--green);
+  color: var(--ink);
+}
+.weekend-role-card .help-counter {
+  color: var(--pink);
+}
+.weekend-role-card .weekend-role-actions > .weekend-signup-action {
+  padding: 9px 12px;
+  border: 2px solid var(--ink);
+  background: var(--yellow);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--pink);
+  font-size: .8rem;
+  font-weight: 800;
+}
+.weekend-role-card .weekend-role-actions > .weekend-signup-action:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--pink);
+}
+.weekend-role-card .weekend-role-actions > .weekend-cancel-action {
+  padding: 8px 9px;
+  border: 1px solid #a7aaa7;
+  background: transparent;
+  color: #555b58;
+  box-shadow: none;
+  font-size: .72rem;
+  font-weight: 600;
+}
+.weekend-role-card .weekend-role-actions > .weekend-cancel-action:hover {
+  border-color: var(--ink);
+  background: transparent;
+  color: var(--ink);
+}
+
+@media (max-width: 700px) {
+  .weekend-role-grid { grid-template-columns: 1fr; }
+  .weekend-schedule { gap: 18px; }
+  .weekend-role-actions { align-items: center; }
+}

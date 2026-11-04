@@ -3,10 +3,14 @@ import { NextResponse } from "next/server";
 import { supabaseRest } from "@/lib/supabase-rest";
 
 const allowedWeekends = new Set(["nov-2026", "dec-2026", "jan-2027", "feb-2027", "mar-2027"]);
-const allowedDays = new Set(["Samstag", "Sonntag"]);
+const standardWeekendSlots = new Set([
+  "Samstag · 10–14 Uhr", "Samstag · 14–19 Uhr",
+  "Sonntag · 10–14 Uhr", "Sonntag · 14–19 Uhr",
+]);
 const NOVEMBER_FRIDAY_SLOT = "Freitag · 14–19 Uhr";
+const allowedWeekendRoles = new Set(["Helfer:in", "Verpflegung", "Kinderbetreuung"]);
 function validWeekendSlot(eventId: string, slot: string) {
-  return allowedWeekends.has(eventId) && (allowedDays.has(slot) || (eventId === "nov-2026" && slot === NOVEMBER_FRIDAY_SLOT));
+  return allowedWeekends.has(eventId) && (standardWeekendSlots.has(slot) || (eventId === "nov-2026" && slot === NOVEMBER_FRIDAY_SLOT));
 }
 const allowedConstructionSlots = new Set([
   "fri-09-evening", "sat-10-morning", "sat-10-evening", "sun-11-morning",
@@ -65,11 +69,11 @@ export async function POST(request: Request) {
       ? Array.from(new Set<string>(body.days.map((value: unknown) => String(value ?? "").trim()).filter((value: string) => value.length > 0)))
       : [singleSlot];
     const slots: string[] = eventType === "weekend" ? requestedWeekendSlots : [singleSlot];
-    const role = eventType === "construction-week" ? String(body.role ?? "").trim() : "";
+    const role = String(body.role ?? "").trim();
 
     const validSignup = eventType === "construction-week"
       ? eventId === "construction-week" && slots.length === 1 && allowedConstructionSlots.has(slots[0]) && allowedRoles.has(role)
-      : slots.length > 0 && slots.length <= 3 && slots.every((slot) => validWeekendSlot(eventId, slot));
+      : slots.length > 0 && slots.length <= 5 && slots.every((slot) => validWeekendSlot(eventId, slot)) && allowedWeekendRoles.has(role);
 
     if (!validSignup || (!isChildrenSignup && (!firstName || !lastName)) || (isChildrenSignup && !childAges) || firstName.length > 50 || lastName.length > 80 || name.length > 140 || comment.length > 500 || childAges.length > 80) {
       return NextResponse.json({ error: "Bitte fülle alle Felder korrekt aus." }, { status: 400 });
