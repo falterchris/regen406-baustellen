@@ -1327,7 +1327,7 @@ footer a {
 .weekend-role-card .weekend-role-actions > .weekend-signup-action {
   border: 2px solid var(--ink);
   background: var(--blue);
-  color: var(--ink);
+  color: #fff;
   box-shadow: 4px 4px 0 var(--green);
 }
 
