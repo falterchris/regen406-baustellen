@@ -1238,3 +1238,153 @@ footer a {
     font-size: 2.8rem;
   }
 }
+
+/* v39: klares Wochenend-Akkordeon + Wochenend-Farbsystem */
+.weekend-card,
+.weekend-card.is-collapsed,
+.weekend-card.is-open {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 0;
+  background: var(--paper);
+  border: 0;
+}
+
+.weekend-card > .mobile-card-toggle {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.weekend-card > .mobile-card-toggle::after,
+.weekend-card.is-open > .mobile-card-toggle::after {
+  content: none !important;
+  display: none !important;
+}
+
+.weekend-card > .mobile-card-toggle .date,
+.weekend-card.is-collapsed > .mobile-card-toggle .date {
+  min-height: 96px;
+  height: auto;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 24px;
+  background: var(--green);
+  border: 1px solid var(--green);
+}
+
+.weekend-card > .mobile-card-toggle .date span,
+.weekend-card > .mobile-card-toggle .date strong,
+.weekend-card > .mobile-card-toggle .date small {
+  margin: 0;
+}
+
+.weekend-card > .mobile-card-toggle .date small {
+  justify-self: end;
+  white-space: nowrap;
+}
+
+.weekend-toggle-label {
+  justify-self: end;
+  white-space: nowrap;
+  font-size: .84rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 8px 0 7px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.weekend-card > .mobile-card-toggle:hover .weekend-toggle-label,
+.weekend-card > .mobile-card-toggle:focus-visible .weekend-toggle-label {
+  border-bottom-width: 3px;
+}
+
+.weekend-card.is-open > .mobile-card-toggle .date {
+  border-bottom-color: var(--ink);
+}
+
+.weekend-card.is-collapsed .card-content {
+  display: none;
+}
+
+.weekend-card.is-open .card-content {
+  display: flex;
+  padding: 22px 24px 26px;
+  border: 1px solid var(--green);
+  border-top: 0;
+  background: var(--paper);
+}
+
+/* Wochenenden: Blau + Grün statt Gelb + Pink */
+.weekend-role-card .weekend-role-actions > .weekend-signup-action {
+  border: 2px solid var(--ink);
+  background: var(--blue);
+  color: var(--ink);
+  box-shadow: 4px 4px 0 var(--green);
+}
+
+.weekend-role-card .weekend-role-actions > .weekend-signup-action:hover,
+.weekend-role-card .weekend-role-actions > .weekend-signup-action:focus-visible {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--green);
+}
+
+.weekend-role-card .weekend-role-actions > .weekend-cancel-action {
+  border: 1px solid #8e918d;
+  background: transparent;
+  color: #565a57;
+  box-shadow: none;
+}
+
+.weekend-role-card .weekend-role-actions > .weekend-cancel-action:hover,
+.weekend-role-card .weekend-role-actions > .weekend-cancel-action:focus-visible {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: rgba(143, 208, 179, .18);
+}
+
+@media (max-width: 760px) {
+  .weekend-card > .mobile-card-toggle .date,
+  .weekend-card.is-collapsed > .mobile-card-toggle .date {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 12px;
+    padding: 17px 18px;
+  }
+
+  .weekend-card > .mobile-card-toggle .date span {
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+
+  .weekend-card > .mobile-card-toggle .date strong {
+    align-self: end;
+  }
+
+  .weekend-card > .mobile-card-toggle .date small {
+    grid-column: 2;
+    justify-self: start;
+    margin: 0;
+    align-self: start;
+  }
+
+  .weekend-toggle-label {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin-top: 7px;
+    font-size: .8rem;
+  }
+
+  .weekend-card.is-open .card-content {
+    padding: 18px;
+  }
+}

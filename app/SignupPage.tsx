@@ -259,7 +259,12 @@ export default function SignupPage() {
       const dayNames = Array.from(new Set(weekend.signupShifts.map((shift) => shift.day)));
       return <article id={weekend.id} className={`weekend-card ${isThanks ? "is-thanks" : ""} ${isOpen ? "is-open" : "is-collapsed"}`} key={weekend.id}>
         <button type="button" className="mobile-card-toggle" onClick={() => setOpenWeekendId(isOpen ? null : weekend.id)} aria-expanded={isOpen}>
-          <div className="date"><span>{weekend.days}</span><strong>{weekend.month}</strong><small>{people.length} {people.length === 1 ? "Anmeldung" : "Anmeldungen"}</small></div>
+          <div className="date">
+            <span>{weekend.days}</span>
+            <strong>{weekend.month}</strong>
+            <small>{people.length} {people.length === 1 ? "Anmeldung" : "Anmeldungen"}</small>
+            <b className="weekend-toggle-label" aria-hidden="true">{isOpen ? "Einklappen −" : "Aufklappen +"}</b>
+          </div>
         </button>
         <div className="card-content">
           <p className="cafe-note">{weekend.cafe}</p>
