@@ -22,7 +22,6 @@ const standardWeekendShifts: WeekendShift[] = [
 ];
 const weekends: Weekend[] = [
   { id: "nov-2026", year: 2026, month: "November", days: "13.–15.", dates: "13.–15. November 2026", cafe: "Sa. 14.11. · Baustellencafé", endsAt: "2026-11-15T20:00:00+01:00", signupShifts: [{ value: "Freitag · 14–19 Uhr", day: "Freitag", time: "14–19 Uhr", label: "Freitag · 14–19 Uhr" }, ...standardWeekendShifts] },
-  { id: "dec-2026", year: 2026, month: "Dezember", days: "12.–13.", dates: "12.–13. Dezember 2026", cafe: "Sa. 12.12. · Baustellencafé", endsAt: "2026-12-13T20:00:00+01:00", signupShifts: standardWeekendShifts },
   { id: "jan-2027", year: 2027, month: "Januar", days: "09.–10.", dates: "09.–10. Januar 2027", cafe: "Sa. 09.01. · Baustellencafé", endsAt: "2027-01-10T20:00:00+01:00", signupShifts: standardWeekendShifts },
   { id: "feb-2027", year: 2027, month: "Februar", days: "06.–07.", dates: "06.–07. Februar 2027", cafe: "Sa. 06.02. · Baustellencafé", endsAt: "2027-02-07T20:00:00+01:00", signupShifts: standardWeekendShifts },
   { id: "mar-2027", year: 2027, month: "März", days: "06.–07.", dates: "06.–07. März 2027", cafe: "Sa. 06.03. · Baustellencafé", endsAt: "2027-03-07T20:00:00+01:00", signupShifts: standardWeekendShifts },

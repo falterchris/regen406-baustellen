@@ -1,3 +1,9 @@
+## v39.2 – Dezember-Wochenende entfernt
+
+- Das Baustellen-Wochenende 12.–13. Dezember 2026 wurde aus der öffentlichen Anmeldung entfernt.
+- Dezember wurde auch aus der Admin-Auswahl und den API-Whitelists entfernt.
+- Bestehende Dezember-Datensätze in Supabase werden nicht gelöscht.
+
 ## v36.2 – Checkbox layout fix
 
 - Weekend multi-select checkbox labels stay aligned beside the checkbox on desktop and mobile.
@@ -14,7 +20,7 @@ Die Baustellen-Anmeldung verwendet ab v30 **Supabase/Postgres** als Datenbank. G
 - Baustellencafé am 18.10. von 15–17 Uhr
 - Rollen: Verpflegung, Lead, Helfer:in, Kinderbetreuung, Kinder
 - Bei `Kinder` werden ausschließlich Altersangaben gespeichert
-- Baustellen-Wochenenden November 2026 bis März 2027
+- Baustellen-Wochenenden November 2026 sowie Januar bis März 2027
 - Eigene Einträge werden im Browser erkannt und können abgemeldet werden
 - bestehendes Design, Mobile-Akkordeons, Vorschau-Datum und Archivierungslogik
 

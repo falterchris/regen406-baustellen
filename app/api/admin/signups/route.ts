@@ -3,7 +3,7 @@ import { isAdminSession } from "@/lib/admin-auth";
 import { supabaseRest } from "@/lib/supabase-rest";
 
 const select = "id,event_type,event_id,slot,role,name,comment,child_ages,created_at,legacy_import";
-const allowedWeekends = new Set(["nov-2026", "dec-2026", "jan-2027", "feb-2027", "mar-2027"]);
+const allowedWeekends = new Set(["nov-2026", "jan-2027", "feb-2027", "mar-2027"]);
 const standardWeekendSlots = new Set([
   "Samstag · 10–14 Uhr", "Samstag · 14–19 Uhr",
   "Sonntag · 10–14 Uhr", "Sonntag · 14–19 Uhr",

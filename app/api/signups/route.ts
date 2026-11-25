@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { supabaseRest } from "@/lib/supabase-rest";
 
-const allowedWeekends = new Set(["nov-2026", "dec-2026", "jan-2027", "feb-2027", "mar-2027"]);
+const allowedWeekends = new Set(["nov-2026", "jan-2027", "feb-2027", "mar-2027"]);
 const standardWeekendSlots = new Set([
   "Samstag · 10–14 Uhr", "Samstag · 14–19 Uhr",
   "Sonntag · 10–14 Uhr", "Sonntag · 14–19 Uhr",

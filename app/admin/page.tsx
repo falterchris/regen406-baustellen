@@ -54,7 +54,6 @@ const constructionRoles = ["Verpflegung", "Lead", "Helfer:in", "Kinderbetreuung"
 const weekendRoles = ["Helfer:in", "Verpflegung", "Kinderbetreuung"];
 const weekendOptions = [
   ["nov-2026", "13.–15. November 2026"],
-  ["dec-2026", "12.–13. Dezember 2026"],
   ["jan-2027", "09.–10. Januar 2027"],
   ["feb-2027", "06.–07. Februar 2027"],
   ["mar-2027", "06.–07. März 2027"],
@@ -66,7 +65,6 @@ function weekendSlotsFor(eventId: string) {
 
 const weekendDates: Record<string, { friday?: string; saturday: string; sunday: string }> = {
   "nov-2026": { friday: "Fr. 13.11.", saturday: "Sa. 14.11.", sunday: "So. 15.11." },
-  "dec-2026": { saturday: "Sa. 12.12.", sunday: "So. 13.12." },
   "jan-2027": { saturday: "Sa. 09.01.", sunday: "So. 10.01." },
   "feb-2027": { saturday: "Sa. 06.02.", sunday: "So. 07.02." },
   "mar-2027": { saturday: "Sa. 06.03.", sunday: "So. 07.03." },
